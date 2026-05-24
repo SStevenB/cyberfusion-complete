@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+
+  web01:
+    image: nginx:alpine
+    container_name: northstar-web01
+    ports:
+      - "8080:80"
+    networks:
+      northstar-lab:
+        ipv4_address: 172.29.0.10
+
+  web02:
+    image: nginx:alpine
+    container_name: northstar-web02
+    ports:
+      - "8443:80"
+    networks:
+      northstar-lab:
+        ipv4_address: 172.29.0.11
+
+  ssh01:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: northstar-ssh01
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - PASSWORD_ACCESS=true
+      - USER_PASSWORD=labpassword123
+      - USER_NAME=labuser
+    ports:
+      - "2222:2222"
+    networks:
+      northstar-lab:
+        ipv4_address: 172.29.0.12
+
+networks:
+  northstar-lab:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.29.0.0/24

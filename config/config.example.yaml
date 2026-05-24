@@ -1,0 +1,54 @@
+# config/config.example.yaml
+# Copy this to config.yaml and fill in your API keys.
+# The project runs without any API keys — keys unlock additional data sources.
+
+# ── Optional API Keys ───────────────────────────────────────────────────────
+# All free tiers. No credit card required.
+
+greynoise:
+  api_key: ""         # https://www.greynoise.io/  — free community key
+  enabled: true
+
+hibp:
+  api_key: ""         # https://haveibeenpwned.com/API/Key — ~$3.50/month or free for students
+  enabled: true
+  # The domain(s) you want to check for breach exposure.
+  # For a portfolio project, use a domain you own or a test domain.
+  monitored_domains:
+    - "example.com"
+
+shodan:
+  api_key: ""         # https://account.shodan.io/ — free account gives InternetDB access
+  enabled: true
+
+# ── Lab Scan Settings ───────────────────────────────────────────────────────
+scanner:
+  # IMPORTANT: Only scan hosts you own or have explicit permission to scan.
+  # Default targets are localhost and Docker lab containers only.
+  targets:
+    - "127.0.0.1"
+    - "172.28.0.10"   # northstar-web01 (Docker lab only)
+    - "172.28.0.11"   # northstar-web02 (Docker lab only)
+    - "172.28.0.12"   # northstar-ssh01 (Docker lab only)
+  use_nmap: false     # Set to true if nmap is installed
+  port_timeout: 0.5   # Seconds per port
+
+# ── Asset Inventory ─────────────────────────────────────────────────────────
+# Asset criticality affects risk scores. Tier 1 = highest business impact.
+assets:
+  tiers:
+    tier1:            # Crown jewels — max score multiplier
+      - "vpn01.northstar-analytics.local"
+      - "dc01.northstar-analytics.local"
+    tier2:            # Important infrastructure
+      - "web01.northstar-analytics.local"
+      - "web02.northstar-analytics.local"
+    tier3:            # Standard endpoints
+      - "ssh01.northstar-analytics.local"
+
+# ── Pipeline Settings ───────────────────────────────────────────────────────
+pipeline:
+  cve_days_back: 7
+  cve_max_results: 30
+  news_max_per_feed: 10
+  save_history: true      # Keep previous run results for trend comparison

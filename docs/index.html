@@ -1,0 +1,3590 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CyberFusion — Threat Intelligence Platform (Demo)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="CyberFusion — an explainable, lab-safe cyber threat intelligence fusion and prioritization platform. Static portfolio demo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
+<style>
+/* CyberFusion — refined enterprise UI */
+:root {
+  --navy-900: #0a1226;
+  --navy-800: #0e1830;
+  --navy-700: #16223f;
+  --navy-600: #243456;
+  --navy-500: #3a4a73;
+  --sidebar-text: #c5cbdb;
+  --sidebar-text-dim: #8a93ab;
+  --sidebar-border: #1c2748;
+
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --surface-2: #fafbfd;
+  --border: #e5e8ef;
+  --border-strong: #d2d7e2;
+
+  --text-1: #0f172a;
+  --text-2: #475569;
+  --text-3: #64748b;
+  --text-4: #94a3b8;
+
+  --accent: #0fb5a8;
+  --accent-dark: #0a8f85;
+  --accent-soft: #e6f7f5;
+
+  --crit: #dc2626;
+  --crit-soft: #fdecec;
+  --high: #ea580c;
+  --high-soft: #fdeee2;
+  --med: #2563eb;
+  --med-soft: #e6efff;
+  --low: #16a34a;
+  --low-soft: #e6f6ec;
+  --unknown: #64748b;
+  --unknown-soft: #eef0f4;
+
+  --kev: #7b2fbe;
+  --kev-soft: #f1e8fa;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 30px -10px rgba(15, 23, 42, 0.18);
+
+  --radius: 8px;
+  --radius-sm: 6px;
+  --radius-lg: 12px;
+
+  --sidebar-w: 248px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  color: var(--text-1);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+code, .mono { font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; }
+
+/* ── Layout ────────────────────────────────────────────────────────── */
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ───────────────────────────────────────────────────────── */
+.sidebar {
+  background: var(--navy-800);
+  color: var(--sidebar-text);
+  border-right: 1px solid var(--navy-900);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0 12px;
+}
+.sb-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px 18px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+.sb-mark {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--accent) 0%, #1ed3c2 100%);
+  display: grid; place-items: center;
+  color: var(--navy-900);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: -0.02em;
+}
+.sb-name { font-weight: 700; color: #fff; font-size: 15px; letter-spacing: -0.01em; }
+.sb-sub { font-size: 11px; color: var(--sidebar-text-dim); margin-top: 1px; }
+
+.sb-org {
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+.sb-org-label { font-size: 10px; letter-spacing: 0.08em; color: var(--sidebar-text-dim); text-transform: uppercase; }
+.sb-org-name { font-weight: 600; color: #fff; margin-top: 2px; font-size: 13px; }
+.sb-org-scope { font-size: 11px; color: var(--sidebar-text-dim); margin-top: 2px; font-family: 'IBM Plex Mono', monospace; }
+
+.sb-section { padding: 16px 12px 6px; }
+.sb-section-label {
+  padding: 0 8px 8px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sidebar-text-dim);
+  font-weight: 600;
+}
+.sb-nav { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1px; }
+.sb-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--sidebar-text);
+  font-size: 13px;
+  font-weight: 500;
+  user-select: none;
+  transition: background .12s, color .12s;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+.sb-nav-item:hover { background: rgba(255,255,255,0.04); color: #fff; }
+.sb-nav-item.active {
+  background: rgba(15, 181, 168, 0.12);
+  color: #fff;
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.sb-nav-icon {
+  width: 16px; height: 16px;
+  display: grid; place-items: center;
+  color: currentColor;
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+.sb-nav-count {
+  margin-left: auto;
+  font-size: 11px;
+  background: rgba(255,255,255,0.06);
+  padding: 1px 7px;
+  border-radius: 10px;
+  color: var(--sidebar-text-dim);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.sb-nav-count.crit { background: rgba(220,38,38,0.18); color: #ff8989; }
+
+.sb-foot {
+  margin-top: auto;
+  padding: 14px 20px;
+  border-top: 1px solid var(--sidebar-border);
+  font-size: 11px;
+  color: var(--sidebar-text-dim);
+  line-height: 1.5;
+}
+.sb-status {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 6px;
+  color: var(--sidebar-text);
+}
+.sb-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px rgba(15,181,168,0.18); }
+.sb-refresh {
+  margin-top: 8px;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px;
+  background: transparent;
+  color: var(--sidebar-text);
+  border: 1px solid var(--sidebar-border);
+  padding: 5px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.sb-refresh:hover { border-color: var(--navy-500); color: #fff; }
+
+/* ── Content ───────────────────────────────────────────────────────── */
+.main { padding: 0; min-width: 0; }
+.topbar {
+  height: 60px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.crumbs { display: flex; align-items: center; gap: 8px; color: var(--text-3); font-size: 13px; }
+.crumbs strong { color: var(--text-1); font-weight: 600; }
+.crumb-sep { opacity: 0.4; }
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.search {
+  width: 280px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 0 10px 0 32px;
+  font: inherit;
+  font-size: 13px;
+  background: var(--surface-2) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='7'/><path d='m21 21-4.3-4.3'/></svg>") no-repeat 10px center;
+  color: var(--text-1);
+}
+.search:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+.icon-btn {
+  width: 34px; height: 34px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  display: grid; place-items: center;
+  color: var(--text-2);
+}
+.icon-btn:hover { background: var(--surface-2); color: var(--text-1); }
+.avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2c3e6b, #1a2848);
+  color: #fff;
+  display: grid; place-items: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.page {
+  padding: 28px 32px 60px;
+  max-width: 1500px;
+}
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.018em;
+  margin: 0;
+  color: var(--text-1);
+}
+.page-sub { color: var(--text-3); font-size: 13.5px; margin-top: 4px; }
+.page-actions { display: flex; gap: 8px; align-items: center; }
+
+/* ── Buttons ───────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 14px;
+  border-radius: 7px;
+  font: inherit; font-size: 13px; font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-1);
+  cursor: pointer;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.btn:hover { background: var(--surface-2); border-color: var(--border-strong); }
+.btn-primary {
+  background: var(--navy-800);
+  border-color: var(--navy-800);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--navy-900); border-color: var(--navy-900); }
+.btn-accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn-accent:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+.btn-ghost { border-color: transparent; background: transparent; color: var(--text-2); }
+.btn-ghost:hover { background: var(--surface-2); color: var(--text-1); }
+.btn-sm { padding: 5px 9px; font-size: 12px; }
+
+/* ── Cards ─────────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.card-head {
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.card-title { font-size: 14px; font-weight: 700; color: var(--text-1); margin: 0; letter-spacing: -0.005em; }
+.card-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; font-weight: 500; }
+.card-body { padding: 20px; }
+.card-foot { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--surface-2); border-radius: 0 0 var(--radius-lg) var(--radius-lg); font-size: 12px; color: var(--text-3); }
+
+/* ── KPIs ──────────────────────────────────────────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  font-weight: 600;
+}
+.kpi-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.kpi-value { font-size: 30px; font-weight: 700; letter-spacing: -0.025em; color: var(--text-1); margin-top: 6px; line-height: 1; }
+.kpi-meta { font-size: 11.5px; color: var(--text-3); margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+.kpi-delta { font-weight: 600; }
+.kpi-delta.up { color: var(--crit); }
+.kpi-delta.down { color: var(--low); }
+.kpi-delta.flat { color: var(--text-4); }
+
+/* ── Risk score gauge (big number card) ────────────────────────────── */
+.score-big {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
+  align-items: center;
+}
+.score-ring {
+  width: 132px; height: 132px;
+  position: relative;
+}
+.score-ring svg { transform: rotate(-90deg); }
+.score-ring-num {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text-1);
+}
+.score-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; }
+.score-band { display: inline-flex; gap: 4px; margin-top: 6px; }
+.score-band .seg { height: 6px; width: 28px; border-radius: 2px; background: var(--border); }
+.score-band .seg.active.low { background: var(--low); }
+.score-band .seg.active.med { background: var(--med); }
+.score-band .seg.active.high { background: var(--high); }
+.score-band .seg.active.crit { background: var(--crit); }
+
+/* ── Badges ────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.badge.crit { background: var(--crit-soft); color: var(--crit); border-color: rgba(220,38,38,0.2); }
+.badge.high { background: var(--high-soft); color: var(--high); border-color: rgba(234,88,12,0.2); }
+.badge.med  { background: var(--med-soft);  color: var(--med);  border-color: rgba(37,99,235,0.2); }
+.badge.low  { background: var(--low-soft);  color: var(--low);  border-color: rgba(22,163,74,0.2); }
+.badge.unknown { background: var(--unknown-soft); color: var(--unknown); }
+.badge.kev { background: var(--kev-soft); color: var(--kev); border-color: rgba(123,47,190,0.2); }
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.badge.sm { padding: 1px 7px; font-size: 10.5px; }
+.badge.solid { color: #fff; }
+.badge.solid.crit { background: var(--crit); border-color: var(--crit); }
+.badge.solid.high { background: var(--high); border-color: var(--high); }
+.badge.solid.med  { background: var(--med);  border-color: var(--med); }
+.badge.solid.low  { background: var(--low);  border-color: var(--low); }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-2);
+  font-weight: 500;
+}
+.chip.active { background: var(--accent-soft); color: var(--accent-dark); border-color: rgba(15,181,168,0.3); }
+
+/* ── Tables / lists ────────────────────────────────────────────────── */
+.list { display: flex; flex-direction: column; }
+.list-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .1s;
+}
+.list-row:last-child { border-bottom: 0; }
+.list-row:hover { background: var(--surface-2); }
+.list-rail {
+  width: 3px; height: 36px; border-radius: 2px;
+}
+.list-rail.crit { background: var(--crit); }
+.list-rail.high { background: var(--high); }
+.list-rail.med  { background: var(--med); }
+.list-rail.low  { background: var(--low); }
+.list-title { font-weight: 600; color: var(--text-1); font-size: 13.5px; }
+.list-meta { font-size: 12px; color: var(--text-3); margin-top: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.list-score {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+/* ── Tables ────────────────────────────────────────────────────────── */
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.data th, table.data td {
+  text-align: left;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+}
+table.data th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  font-weight: 600;
+  background: var(--surface-2);
+}
+table.data tr:last-child td { border-bottom: 0; }
+table.data tr:hover td { background: var(--surface-2); }
+table.data td .mono { font-size: 12.5px; }
+
+/* ── Distribution bar ──────────────────────────────────────────────── */
+.distbar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--border); }
+.distbar > span { display: block; height: 100%; }
+.dist-legend { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+.dist-legend > div { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-2); }
+.dist-legend .sw { width: 9px; height: 9px; border-radius: 2px; }
+
+/* ── Tabs ──────────────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.tab {
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-3);
+  border: none;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  margin-bottom: -1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tab:hover { color: var(--text-1); }
+.tab.active { color: var(--text-1); border-bottom-color: var(--accent); }
+.tab-count {
+  font-size: 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 1px 7px;
+  border-radius: 10px;
+  color: var(--text-3);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.tab.active .tab-count { background: var(--accent-soft); color: var(--accent-dark); border-color: transparent; }
+
+/* ── Misc ──────────────────────────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.row { display: flex; align-items: center; gap: 10px; }
+.row-gap { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.spacer { flex: 1; }
+
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+.alert {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.alert-strong { color: var(--text-1); font-weight: 600; }
+.alert.warn { background: #fff8eb; border-color: #f4d68a; color: #7a4f00; }
+.alert.warn .alert-strong { color: #5a3a00; }
+.alert.info { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+.alert.info .alert-strong { color: #1e3a8a; }
+
+.mitre-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 8px;
+  background: #f1efff;
+  color: #5b3fc4;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 5px;
+  border: 1px solid #e2dcf7;
+}
+
+.section-h {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0 0 10px;
+}
+
+.status-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+}
+.status-pill .ind { width: 7px; height: 7px; border-radius: 50%; background: var(--text-4); }
+.status-pill.open .ind { background: var(--crit); box-shadow: 0 0 0 3px rgba(220,38,38,0.16); }
+.status-pill.ack .ind { background: var(--high); }
+.status-pill.resolved .ind { background: var(--low); }
+.status-pill.fp .ind { background: var(--text-4); }
+
+/* ── Trend sparkline / bars ────────────────────────────────────────── */
+.sparkbars { display: flex; align-items: flex-end; gap: 4px; height: 90px; }
+.sparkbars .bar { flex: 1; background: var(--border); border-radius: 2px 2px 0 0; position: relative; }
+.sparkbars .bar .seg { display: block; width: 100%; }
+.sparkbars .bar .seg.crit { background: var(--crit); }
+.sparkbars .bar .seg.high { background: var(--high); }
+.sparkbars .bar .seg.med  { background: var(--med); }
+.sparkbars .bar .seg.low  { background: var(--low); }
+.sparkbars .bar .seg:first-child { border-radius: 2px 2px 0 0; }
+
+.donut { position: relative; width: 200px; height: 200px; margin: 0 auto; }
+.donut svg { transform: rotate(-90deg); }
+.donut-center {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  text-align: center;
+}
+.donut-center .num { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+.donut-center .lbl { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* finding detail */
+.detail-hero {
+  background: linear-gradient(135deg, var(--navy-800) 0%, var(--navy-700) 100%);
+  color: #fff;
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.detail-hero::after {
+  content: ''; position: absolute; right: -80px; top: -80px;
+  width: 280px; height: 280px;
+  background: radial-gradient(closest-side, rgba(15,181,168,0.3), transparent 70%);
+  pointer-events: none;
+}
+.detail-hero-id { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.6); letter-spacing: 0.08em; }
+.detail-hero-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 6px 0 14px; }
+
+.evidence-list { display: flex; flex-direction: column; gap: 6px; }
+.evidence-item {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  padding: 7px 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-2);
+}
+
+/* score breakdown */
+.score-rows { display: flex; flex-direction: column; gap: 0; }
+.score-row {
+  display: grid; grid-template-columns: 1fr auto;
+  padding: 9px 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: 13px;
+}
+.score-row:last-child { border-bottom: 0; }
+.score-row .lbl { color: var(--text-2); }
+.score-row .val { font-family: 'IBM Plex Mono', monospace; color: var(--text-1); font-weight: 600; }
+.score-row.total { padding-top: 12px; margin-top: 4px; border-top: 1px solid var(--border); border-bottom: 0; }
+.score-row.total .lbl { color: var(--text-1); font-weight: 700; }
+.score-row.total .val { font-size: 16px; }
+
+/* skip "scrolls" — make tabs scroll if many */
+.scroll-x { overflow-x: auto; }
+
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+
+/* ── Illustrative / demo-only tag ──────────────────────────────────── */
+.illus-tag {
+  display: inline-block;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 5px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+</style>
+</head>
+<body>
+<div style="background:#0e1830;color:#c5cbdb;font:12px/1.4 Manrope,sans-serif;padding:9px 16px;text-align:center;border-bottom:1px solid #1c2748">Static portfolio demo of <strong style="color:#fff">CyberFusion</strong> — findings &amp; scores are real pipeline output; scans are lab/localhost only; breach/exposure data is clearly-labeled synthetic. See the <strong style="color:#fff">Methodology</strong> page for what is real vs. illustrative.</div>
+<div id="root"></div>
+<script>
+window.CFData = {
+  "org": {
+    "name": "Northstar Analytics",
+    "scope": "northstar-analytics.local",
+    "environment": "Lab / Demo",
+    "lastRun": "2026-05-23 17:59 UTC",
+    "nextRun": "on demand"
+  },
+  "riskScore": {
+    "current": 72,
+    "previous": 66,
+    "label": "CRITICAL",
+    "trend": "up",
+    "benchmark": 54
+  },
+  "summary": {
+    "critical": 1,
+    "high": 1,
+    "medium": 1,
+    "low": 0,
+    "total": 3
+  },
+  "delta": {
+    "new": 0,
+    "resolved": 0,
+    "escalated": 0,
+    "resolvedIds": []
+  },
+  "trend": [
+    {
+      "d": "Apr 26",
+      "crit": 2,
+      "high": 3,
+      "med": 4,
+      "low": 2
+    },
+    {
+      "d": "Apr 28",
+      "crit": 2,
+      "high": 3,
+      "med": 4,
+      "low": 2
+    },
+    {
+      "d": "Apr 30",
+      "crit": 2,
+      "high": 3,
+      "med": 4,
+      "low": 2
+    },
+    {
+      "d": "May 02",
+      "crit": 2,
+      "high": 3,
+      "med": 3,
+      "low": 2
+    },
+    {
+      "d": "May 04",
+      "crit": 2,
+      "high": 2,
+      "med": 3,
+      "low": 1
+    },
+    {
+      "d": "May 06",
+      "crit": 2,
+      "high": 2,
+      "med": 3,
+      "low": 1
+    },
+    {
+      "d": "May 08",
+      "crit": 2,
+      "high": 2,
+      "med": 3,
+      "low": 1
+    },
+    {
+      "d": "May 10",
+      "crit": 2,
+      "high": 2,
+      "med": 2,
+      "low": 1
+    },
+    {
+      "d": "May 12",
+      "crit": 1,
+      "high": 2,
+      "med": 2,
+      "low": 1
+    },
+    {
+      "d": "May 14",
+      "crit": 1,
+      "high": 2,
+      "med": 2,
+      "low": 1
+    },
+    {
+      "d": "May 16",
+      "crit": 1,
+      "high": 2,
+      "med": 2,
+      "low": 1
+    },
+    {
+      "d": "May 18",
+      "crit": 1,
+      "high": 1,
+      "med": 2,
+      "low": 0
+    },
+    {
+      "d": "May 20",
+      "crit": 1,
+      "high": 1,
+      "med": 1,
+      "low": 0
+    },
+    {
+      "d": "May 22",
+      "crit": 1,
+      "high": 1,
+      "med": 1,
+      "low": 0
+    },
+    {
+      "d": "May 24",
+      "crit": 1,
+      "high": 1,
+      "med": 1,
+      "low": 0
+    }
+  ],
+  "findings": [
+    {
+      "rule_id": "CORR-003",
+      "rule_name": "VPN Credential Exposure",
+      "mitre_tactic": "Initial Access",
+      "mitre_technique": "T1133 \u2014 External Remote Services",
+      "description": "Exposure or breach data contains VPN credentials for this organization. VPN access grants an attacker a trusted network foothold, bypassing perimeter defenses entirely. This is the highest-priority initial access vector.",
+      "severity": "CRITICAL",
+      "risk_label": "CRITICAL",
+      "risk_score": 77,
+      "confidence": "HIGH",
+      "asset_tier": 3,
+      "kev_confirmed_cves": [],
+      "matched_exposure": [
+        "Exposure signal: vpn, remote_access [SIM-EXP-001]"
+      ],
+      "matched_cves": [],
+      "affected_emails": [],
+      "affected_assets": [
+        "vpn01.northstar-analytics.local"
+      ],
+      "recommendation": "1. Force-reset ALL VPN user credentials immediately. 2. Enable MFA on VPN access. 3. Review VPN access logs for the past 30 days. 4. Consider temporary VPN lockdown while investigating.",
+      "score_breakdown": [
+        {
+          "label": "Base severity (CRITICAL)",
+          "value": "+40"
+        },
+        {
+          "label": "Confidence (HIGH)",
+          "value": "+10"
+        },
+        {
+          "label": "Rule importance (CORR-003)",
+          "value": "+25"
+        },
+        {
+          "label": "Corroborating evidence (1 signals)",
+          "value": "+2"
+        }
+      ],
+      "status": "open",
+      "ageDays": 0,
+      "detectedAt": "2026-05-23 17:59 UTC"
+    },
+    {
+      "rule_id": "CORR-008",
+      "rule_name": "Multiple Breach/Exposure Signals Detected",
+      "mitre_tactic": "Reconnaissance",
+      "mitre_technique": "T1594 \u2014 Search Victim-Owned Websites",
+      "description": "6 separate breach or exposure signals detected across 1 source(s). Multiple signals indicate sustained attacker interest or long-term exposure. Each individual signal compounds the risk.",
+      "severity": "HIGH",
+      "risk_label": "HIGH",
+      "risk_score": 55,
+      "confidence": "MEDIUM",
+      "asset_tier": 3,
+      "kev_confirmed_cves": [],
+      "matched_exposure": [
+        "Exposure signal: vpn, remote_access [SIM-EXP-001]",
+        "Exposure signal: rdp, remote_access [SIM-EXP-002]",
+        "Exposure signal: email, corporate [SIM-EXP-003]",
+        "Exposure signal: ssh, linux [SIM-EXP-004]",
+        "Breach: SimulatedSaasBreach2024 (northstar-analytics.local)",
+        "Breach: SimulatedCorpBreach2023 (northstar-analytics.local)"
+      ],
+      "matched_cves": [],
+      "affected_emails": [],
+      "affected_assets": [
+        "organizational email infrastructure"
+      ],
+      "recommendation": "1. Conduct a full exposure review across all breach sources. 2. Prioritize response for signals that include passwords or API keys. 3. Brief security awareness training for all employees. 4. Consider engaging a breach response service.",
+      "score_breakdown": [
+        {
+          "label": "Base severity (HIGH)",
+          "value": "+30"
+        },
+        {
+          "label": "Confidence (MEDIUM)",
+          "value": "+5"
+        },
+        {
+          "label": "Rule importance (CORR-008)",
+          "value": "+8"
+        },
+        {
+          "label": "Corroborating evidence (6 signals)",
+          "value": "+12"
+        }
+      ],
+      "status": "open",
+      "ageDays": 0,
+      "detectedAt": "2026-05-23 17:59 UTC"
+    },
+    {
+      "rule_id": "CORR-005",
+      "rule_name": "Corporate Email Addresses in Breach Data",
+      "mitre_tactic": "Reconnaissance",
+      "mitre_technique": "T1589.002 \u2014 Email Addresses",
+      "description": "3 corporate email address(es) identified in exposure/breach data. These may be used for spear-phishing, credential stuffing, or social engineering attacks against specific individuals.",
+      "severity": "MEDIUM",
+      "risk_label": "MEDIUM",
+      "risk_score": 33,
+      "confidence": "HIGH",
+      "asset_tier": 3,
+      "kev_confirmed_cves": [],
+      "matched_exposure": [],
+      "matched_cves": [],
+      "affected_emails": [
+        "admin@northstar-analytics.local",
+        "it-support@northstar-analytics.local",
+        "j.smith@northstar-analytics.local"
+      ],
+      "affected_assets": [
+        "email infrastructure"
+      ],
+      "recommendation": "1. Alert affected users to increase phishing vigilance. 2. Enable MFA on all identified accounts immediately. 3. Monitor login activity for affected accounts. 4. Implement DMARC/DKIM/SPF if not already done.",
+      "score_breakdown": [
+        {
+          "label": "Base severity (MEDIUM)",
+          "value": "+15"
+        },
+        {
+          "label": "Confidence (HIGH)",
+          "value": "+10"
+        },
+        {
+          "label": "Rule importance (CORR-005)",
+          "value": "+8"
+        }
+      ],
+      "status": "open",
+      "ageDays": 0,
+      "detectedAt": "2026-05-23 17:59 UTC"
+    }
+  ],
+  "cves": [
+    {
+      "id": "CVE-2026-46728",
+      "severity": "HIGH",
+      "score": 8.2,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-16",
+      "description": "Das U-Boot before 2026.04 allows FIT (Flat Image Tree) signature verification bypass because hashed-nodes is omitted from a hash."
+    },
+    {
+      "id": "CVE-2026-6050",
+      "severity": "UNKNOWN",
+      "score": 0.0,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-16",
+      "description": "Rejected reason: This CVE ID has been rejected or withdrawn by its CVE Numbering Authority."
+    },
+    {
+      "id": "CVE-2026-8723",
+      "severity": "MEDIUM",
+      "score": 5.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "### Summary\n\n\n\n`qs.stringify` throws `TypeError` when called with `arrayFormat: 'comma'` and `encodeValuesOnly: true` on an array containing `null` or `undefined`. The throw is synchronous and not handled by any of qs's null-related options (`skipNulls`, `strictNullHandling`).\n\n\n\n### Details\n\n\n\nIn the comma + `encodeValuesOnly` branch, `lib/stringify.js:145` mapped the array through the raw encoder before joining:\n\n\n\n```js\n\n\n\nobj = utils.maybeMap(obj, encoder);\n\n\n\n```\n\n\n\n`utils.encode` (`lib/utils.js:195`) reads `str.length` with no null guard, so a `null` or `undefined` element throws `TypeError`. `skipNulls` and `strictNullHandling` are both checked in the per-element loop below this line and never get a chance to run.\n\n\n\nSame class of bug as the filter-array path fixed in 0c180a4. The vulnerable shape of the comma + `encodeValuesOnly` branch was introduced in 4c4b23d (\"encode comma values more consistently\", PR #463, 2023-01-19), first released in v6.11.1.\n\n\n\n#### PoC\n\n\n\n```js\n\n\n\nconst qs = require('qs');\n\n\n\nqs.stringify({ a: [null, 'b'] },      { arrayFormat: 'comma', encodeValuesOnly: true });\n\n\n\nqs.stringify({ a: [undefined, 'b'] }, { arrayFormat: 'comma', encodeValuesOnly: true });\n\n\n\nqs.stringify({ a: [null] },           { arrayFormat: 'comma', encodeValuesOnly: true });\n\n\n\n// TypeError: Cannot read properties of null (reading 'length')\n\n\n\n//     at encode (lib/utils.js:195:13)\n\n\n\n//     at Object.maybeMap (lib/utils.js:322:37)\n\n\n\n//     at stringify (lib/stringify.js:145:25)\n\n\n\n```\n\n\n\n#### Fix\n\n\n\n`lib/stringify.js:145`, applied in 21f80b3 on `main` and released as v6.15.2:\n\n\n\n```diff\n\n\n\n- obj = utils.maybeMap(obj, encoder);\n\n\n\n+ obj = utils.maybeMap(obj, function (v) {\n\n\n\n+     return v == null ? v : encoder(v);\n\n\n\n+ });\n\n\n\n```\n\n\n\n`null` and `undefined` now pass through `maybeMap` unchanged and reach the `join(',')` step as-is. For `{ a: [null, 'b'] }` this produces `a=,b`, matching the non-`encodeValuesOnly` comma path (which already joins before encoding and produces `a=%2Cb` for the same input). Single-element `[null]` arrays still collapse via the existing `obj.join(',') || null` and remain subject to `skipNulls` / `strictNullHandling` in the main loop.\n\n\n\n### Affected versions\n\n\n\n`>=6.11.1 <6.15.2` \u2014 fixed in v6.15.2.\n\n\n\nThe vulnerable code shape was introduced in 4c4b23d and first shipped in v6.11.1. Earlier versions \u2014 including all of 6.7.x, 6.8.x, 6.9.x, 6.10.x, and 6.11.0 \u2014 implemented the comma + `encodeValuesOnly` path differently (joining before encoding) and are not affected. Empirically verified across released versions.\n\n\n\n### Impact\n\n\n\nApplication code that calls `qs.stringify` with both `arrayFormat: 'comma'` and `encodeValuesOnly: true` (both non-default) on input that may contain a `null` or `undefined` array element will throw synchronously instead of producing a query string. In a typical Node.js HTTP framework (Express, Fastify, Koa, hapi) the sync throw is caught by the framework's error boundary and the affected request returns a 500; the worker process does not exit and subsequent requests are unaffected. The \"kills the worker process\" framing applies only to call sites outside a request-handler error boundary (background jobs, startup paths, stream pipelines) or to deployments with framework error handling explicitly disabled.\n\n\n\nThe vulnerable input is a `null` or `undefined` entry inside an array; this is reachable from JSON request bodies or from application code constructing arrays from user input, but not from standard HTML form submissions (which produce strings or omitted fields, not literal `null`)."
+    },
+    {
+      "id": "CVE-2026-8724",
+      "severity": "MEDIUM",
+      "score": 4.7,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A security flaw has been discovered in Dataease 2.10.20. Impacted is the function SqlparserUtils.transFilter of the file SqlparserUtils.java of the component Data Dashboard. The manipulation results in sql injection. The attack may be launched remotely. The exploit has been released to the public and may be used for attacks. The vendor was contacted early about this disclosure."
+    },
+    {
+      "id": "CVE-2026-8725",
+      "severity": "HIGH",
+      "score": 7.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A weakness has been identified in CoreWorxLab CAAL up to 1.6.0. The affected element is an unknown function of the file src/caal/webhooks.py of the component test-hass Endpoint. This manipulation causes server-side request forgery. Remote exploitation of the attack is possible. The exploit has been made available to the public and could be used for attacks. The vendor was contacted early about this disclosure but did not respond in any way."
+    },
+    {
+      "id": "CVE-2026-8719",
+      "severity": "HIGH",
+      "score": 8.8,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "The AI Engine \u2013 The Chatbot, AI Framework & MCP for WordPress plugin for WordPress is vulnerable to Privilege Escalation in version 3.4.9. This is due to missing WordPress capability enforcement in the MCP OAuth bearer-token authorization path, where any valid OAuth token causes MCP access to be granted without verifying administrator privileges. This makes it possible for authenticated (Subscriber+) attackers to invoke admin-level MCP tools and escalate privileges to Administrator."
+    },
+    {
+      "id": "CVE-2026-8728",
+      "severity": "MEDIUM",
+      "score": 4.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A security vulnerability has been detected in Open5GS up to 2.7.7. The impacted element is the function ogs_sbi_discovery_option_parse_plmn_list in the library /lib/sbi/conv.c of the component NRF. Such manipulation of the argument target-plmn-list leads to denial of service. The attack can be executed remotely. The exploit has been disclosed publicly and may be used. The project was informed of the problem early through an issue report but has not responded yet."
+    },
+    {
+      "id": "CVE-2026-8729",
+      "severity": "MEDIUM",
+      "score": 4.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A vulnerability was detected in Open5GS up to 2.7.7. This affects an unknown function in the library /lib/sbi/message.c of the component NRF. Performing a manipulation of the argument service-names/snssais results in denial of service. The attack is possible to be carried out remotely. The exploit is now public and may be used. The project was informed of the problem early through an issue report but has not responded yet."
+    },
+    {
+      "id": "CVE-2026-8730",
+      "severity": "MEDIUM",
+      "score": 4.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A flaw has been found in Open5GS up to 2.7.6. This impacts the function ogs_sbi_nf_instance_set_id in the library /lib/sbi/context.c of the component NRF. Executing a manipulation of the argument nfInstanceId can lead to denial of service. The attack may be performed from remote. The exploit has been published and may be used. The project was informed of the problem early through an issue report but has not responded yet."
+    },
+    {
+      "id": "CVE-2026-8731",
+      "severity": "MEDIUM",
+      "score": 4.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A vulnerability has been found in Open5GS up to 2.7.7. Affected is the function ogs_sbi_client_add in the library /lib/sbi/client.c of the component NRF. The manipulation of the argument client_pool leads to denial of service. It is possible to initiate the attack remotely. The exploit has been disclosed to the public and may be used. The project was informed of the problem early through an issue report but has not responded yet."
+    },
+    {
+      "id": "CVE-2026-8733",
+      "severity": "MEDIUM",
+      "score": 6.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A vulnerability was found in Investintech SlimPDFReader up to 2.0.13. Affected by this vulnerability is the function sub_3B4610 of the file SlimPDFReader.exe. The manipulation results in stack-based buffer overflow. It is possible to launch the attack remotely. The exploit has been made public and could be used. The vendor responded to the initial vulnerability report by the researcher with a note that the product is discontinued. This vulnerability only affects products that are no longer supported by the maintainer."
+    },
+    {
+      "id": "CVE-2026-8734",
+      "severity": "HIGH",
+      "score": 7.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A vulnerability was determined in Oinone Pamirs up to 7.2.0. Affected by this issue is the function RSQLToSQLNodeConnector.makeVariable of the component queryListByWrapper Interface. This manipulation causes sql injection. The attack can be initiated remotely. The exploit has been publicly disclosed and may be utilized. The vendor was contacted early about this disclosure but did not respond in any way."
+    },
+    {
+      "id": "CVE-2026-8735",
+      "severity": "MEDIUM",
+      "score": 6.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A vulnerability was identified in Oinone Pamirs up to 7.2.0. This affects the function JsonUtils.parseMap of the file PamirsParserConfig.java of the component appConfigQuery Interface. Such manipulation leads to deserialization. The attack can be launched remotely. The exploit is publicly available and might be used. The vendor was contacted early about this disclosure but did not respond in any way."
+    },
+    {
+      "id": "CVE-2026-8736",
+      "severity": "MEDIUM",
+      "score": 4.1,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A security flaw has been discovered in Oinone Pamirs up to 7.2.0. This vulnerability affects the function request.getParameter of the file LocalFileClient.java of the component RestController. Performing a manipulation of the argument uniqueFileName results in path traversal. The attack may be carried out on the physical device. The exploit has been released to the public and may be used for attacks. The vendor was contacted early about this disclosure but did not respond in any way."
+    },
+    {
+      "id": "CVE-2026-8737",
+      "severity": "MEDIUM",
+      "score": 5.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A weakness has been identified in Sanluan PublicCMS 5.202506.d. This issue affects the function execute of the file publiccms-trade/src/main/java/com/publiccms/views/directive/trade/TradeAddressListDirective.java of the component Trade Address Query Handler. Executing a manipulation of the argument userId/id can lead to missing authentication. The attack may be launched remotely. The exploit has been made available to the public and could be used for attacks. The vendor was contacted early about this disclosure but did not respond in any way."
+    },
+    {
+      "id": "CVE-2026-8738",
+      "severity": "MEDIUM",
+      "score": 6.5,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A security vulnerability has been detected in Sanluan PublicCMS 5.202506.d. Impacted is the function TradeOrderController.pay/TradePaymentController.pay/AccountGatewayComponent.pay of the file publiccms-trade/src/main/java/com/publiccms/controller/web/trade/TradeOrderController.java of the component Trade Payment Flow. The manipulation leads to business logic errors. Remote exploitation of the attack is possible. The exploit has been disclosed publicly and may be used. The vendor was contacted early about this disclosure but did not respond in any way."
+    },
+    {
+      "id": "CVE-2026-8739",
+      "severity": "MEDIUM",
+      "score": 5.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A vulnerability was detected in Sanluan PublicCMS 5.202506.d. The affected element is the function getSignKey of the file publiccms-core/src/main/java/com/publiccms/logic/component/config/SafeConfigComponent.java. The manipulation of the argument privatefile_key results in use of hard-coded cryptographic key\r . The attack can be executed remotely. The exploit is now public and may be used. The vendor was contacted early about this disclosure but did not respond in any way."
+    },
+    {
+      "id": "CVE-2026-8740",
+      "severity": "MEDIUM",
+      "score": 6.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A flaw has been found in Sanluan PublicCMS 5.202506.d. The impacted element is the function execute of the file publiccms-core/src/main/java/com/publiccms/views/directive/tools/TemplateResultDirective.java of the component templateResult API. This manipulation of the argument templateContent causes improper neutralization of special elements used in a template engine. The attack is possible to be carried out remotely. The exploit has been published and may be used. The vendor was contacted early about this disclosure but did not respond in any way."
+    },
+    {
+      "id": "CVE-2026-8741",
+      "severity": "LOW",
+      "score": 3.1,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A vulnerability has been found in EMQX up to 6.2.0. This affects an unknown function of the file apps/emqx/src/emqx_persistent_session_ds.erl of the component QoS 2 PUBLISH Packet Handler. Such manipulation leads to race condition. The attack may be performed from remote. A high complexity level is associated with this attack. The exploitability is reported as difficult. The exploit has been disclosed to the public and may be used. The vendor was contacted early about this disclosure."
+    },
+    {
+      "id": "CVE-2026-8743",
+      "severity": "MEDIUM",
+      "score": 6.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A vulnerability was found in Open5GS up to 2.7.6. This impacts the function ran_ue_find_by_amf_ue_ngap_id of the file src/amf/context.c of the component AMF/MME. Performing a manipulation results in improper authorization. It is possible to initiate the attack remotely. The exploit has been made public and could be used. The patch is named 5746b8576cfceec18ed87eb7d8cf11b1fb4cd8b1. It is suggested to install a patch to address this issue."
+    },
+    {
+      "id": "CVE-2026-8744",
+      "severity": "MEDIUM",
+      "score": 4.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A vulnerability was determined in Open5GS up to 2.7.7. Affected is the function ogs_sbi_subscription_data_add/ogs_sbi_nf_service_add in the library /lib/sbi/context.c of the component NRF. Executing a manipulation can lead to denial of service. It is possible to launch the attack remotely. The exploit has been publicly disclosed and may be utilized. This patch is called 819db11a08b9736a3576c4f99ceb28f7eb99523a. A patch should be applied to remediate this issue."
+    },
+    {
+      "id": "CVE-2026-8745",
+      "severity": "MEDIUM",
+      "score": 4.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A vulnerability was identified in Open5GS up to 2.7.7. Affected by this vulnerability is the function ogs_timer_add in the library /src/ausf/nausf-handler.c of the component AUSF. The manipulation leads to denial of service. The attack can be initiated remotely. The exploit is publicly available and might be used. The project was informed of the problem early through an issue report but has not responded yet."
+    },
+    {
+      "id": "CVE-2026-8746",
+      "severity": "MEDIUM",
+      "score": 4.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A security flaw has been discovered in Open5GS up to 2.7.7. Affected by this issue is the function discover_handler in the library /lib/sbi/nghttp2-server.c of the component NRF. The manipulation results in use after free. The attack can be launched remotely. The exploit has been released to the public and may be used for attacks. The project was informed of the problem early through an issue report but has not responded yet."
+    },
+    {
+      "id": "CVE-2026-8747",
+      "severity": "MEDIUM",
+      "score": 6.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A weakness has been identified in Z-BlogPHP 1.7.4.3430. This affects the function CheckComment of the file zb_system/function/c_system_event.php of the component Commend Approval Handler. This manipulation causes improper authorization. The attack may be initiated remotely. The exploit has been made available to the public and could be used for attacks."
+    },
+    {
+      "id": "CVE-2026-8750",
+      "severity": "MEDIUM",
+      "score": 5.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A vulnerability was identified in h2oai h2o-3 up to 7402. Affected by this issue is the function importFiles of the file h2o-core/src/main/java/water/persist/PersistNFS.java of the component ImportFile API. Such manipulation leads to information disclosure. The attack can be executed remotely. The exploit is publicly available and might be used. The vendor was contacted early about this disclosure but did not respond in any way."
+    },
+    {
+      "id": "CVE-2026-8751",
+      "severity": "HIGH",
+      "score": 7.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A security flaw has been discovered in h2oai h2o-3 up to 7402. This affects the function importBinaryModel of the file h2o-core/src/main/java/hex/Model.java of the component JAR Handler. Performing a manipulation results in deserialization. The attack is possible to be carried out remotely. The exploit has been released to the public and may be used for attacks. The vendor was contacted early about this disclosure but did not respond in any way."
+    },
+    {
+      "id": "CVE-2026-8752",
+      "severity": "MEDIUM",
+      "score": 5.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "A weakness has been identified in h2oai h2o-3 up to 7402. This vulnerability affects the function exec of the file h2o-core/src/main/java/water/rapids/ast/prims/misc/AstSetProperty.java of the component Rapids setproperty Primitive Handler. Executing a manipulation can lead to improper access controls. The attack may be performed from remote. The exploit has been made available to the public and could be used for attacks. The vendor was contacted early about this disclosure but did not respond in any way."
+    },
+    {
+      "id": "CVE-2018-25319",
+      "severity": "HIGH",
+      "score": 7.1,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "Redaxo CMS Addon MyEvents 2.2.1 contains an SQL injection vulnerability that allows authenticated attackers to manipulate database queries by injecting SQL code through the myevents_id parameter. Attackers can send GET requests to the event_add.php page with malicious myevents_id values to extract or modify sensitive database information."
+    },
+    {
+      "id": "CVE-2018-25320",
+      "severity": "CRITICAL",
+      "score": 9.8,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "ACL Analytics versions 11.x through 13.0.0.579 contain an arbitrary code execution vulnerability that allows attackers to execute arbitrary commands by leveraging the EXECUTE function. Attackers can use bitsadmin to download malicious PowerShell scripts and execute them with system privileges to establish reverse shells and gain complete system control."
+    },
+    {
+      "id": "CVE-2018-25321",
+      "severity": "MEDIUM",
+      "score": 4.3,
+      "kev": false,
+      "vendor": "NVD",
+      "product": "\u2014",
+      "published": "2026-05-17",
+      "description": "TP-Link TL-WR720N wireless router contains a cross-site request forgery vulnerability that allows attackers to perform unauthorized administrative actions by crafting malicious web requests. Attackers can modify port forwarding rules via VirtualServerRpm.htm or change WiFi security settings via WlanSecurityRpm.htm by tricking authenticated users into visiting attacker-controlled pages."
+    }
+  ],
+  "kev": [
+    {
+      "cveID": "CVE-2026-9082",
+      "vendorProject": "Drupal",
+      "product": "Core",
+      "vulnerabilityName": "Drupal Core SQL Injection Vulnerability",
+      "dateAdded": "2026-05-22",
+      "dueDate": "2026-05-27",
+      "ransomware": "Unknown"
+    },
+    {
+      "cveID": "CVE-2025-34291",
+      "vendorProject": "Langflow",
+      "product": "Langflow",
+      "vulnerabilityName": "Langflow Origin Validation Error Vulnerability",
+      "dateAdded": "2026-05-21",
+      "dueDate": "2026-06-04",
+      "ransomware": "Unknown"
+    },
+    {
+      "cveID": "CVE-2026-34926",
+      "vendorProject": "Trend Micro",
+      "product": "Apex One",
+      "vulnerabilityName": "Trend Micro Apex One (On-Premise) Directory Traversal Vulnerability",
+      "dateAdded": "2026-05-21",
+      "dueDate": "2026-06-04",
+      "ransomware": "Unknown"
+    },
+    {
+      "cveID": "CVE-2008-4250",
+      "vendorProject": "Microsoft",
+      "product": "Windows",
+      "vulnerabilityName": "Microsoft Windows Buffer Overflow Vulnerability",
+      "dateAdded": "2026-05-20",
+      "dueDate": "2026-06-03",
+      "ransomware": "Unknown"
+    },
+    {
+      "cveID": "CVE-2009-1537",
+      "vendorProject": "Microsoft",
+      "product": "DirectX",
+      "vulnerabilityName": "Microsoft DirectX NULL Byte Overwrite Vulnerability",
+      "dateAdded": "2026-05-20",
+      "dueDate": "2026-06-03",
+      "ransomware": "Unknown"
+    },
+    {
+      "cveID": "CVE-2009-3459",
+      "vendorProject": "Adobe",
+      "product": "Acrobat and Reader",
+      "vulnerabilityName": "Adobe Acrobat and Reader Heap-Based Buffer Overflow Vulnerability",
+      "dateAdded": "2026-05-20",
+      "dueDate": "2026-06-03",
+      "ransomware": "Unknown"
+    },
+    {
+      "cveID": "CVE-2010-0249",
+      "vendorProject": "Microsoft",
+      "product": "Internet Explorer",
+      "vulnerabilityName": "Microsoft Internet Explorer Use-After-Free Vulnerability",
+      "dateAdded": "2026-05-20",
+      "dueDate": "2026-06-03",
+      "ransomware": "Unknown"
+    },
+    {
+      "cveID": "CVE-2010-0806",
+      "vendorProject": "Microsoft",
+      "product": "Internet Explorer",
+      "vulnerabilityName": "Microsoft Internet Explorer Use-After-Free Vulnerability",
+      "dateAdded": "2026-05-20",
+      "dueDate": "2026-06-03",
+      "ransomware": "Unknown"
+    },
+    {
+      "cveID": "CVE-2026-41091",
+      "vendorProject": "Microsoft",
+      "product": "Defender",
+      "vulnerabilityName": "Microsoft Defender Link Following Vulnerability",
+      "dateAdded": "2026-05-20",
+      "dueDate": "2026-06-03",
+      "ransomware": "Unknown"
+    },
+    {
+      "cveID": "CVE-2026-45498",
+      "vendorProject": "Microsoft",
+      "product": "Defender",
+      "vulnerabilityName": "Microsoft Defender Denial of Service Vulnerability",
+      "dateAdded": "2026-05-20",
+      "dueDate": "2026-06-03",
+      "ransomware": "Unknown"
+    },
+    {
+      "cveID": "CVE-2026-42897",
+      "vendorProject": "Microsoft",
+      "product": "Microsoft",
+      "vulnerabilityName": "Microsoft Exchange Server Cross-Site Scripting Vulnerability",
+      "dateAdded": "2026-05-15",
+      "dueDate": "2026-05-29",
+      "ransomware": "Unknown"
+    },
+    {
+      "cveID": "CVE-2026-20182",
+      "vendorProject": "Cisco",
+      "product": "Catalyst SD-WAN",
+      "vulnerabilityName": "Cisco Catalyst SD-WAN Controller Authentication Bypass Vulnerability",
+      "dateAdded": "2026-05-14",
+      "dueDate": "2026-05-17",
+      "ransomware": "Unknown"
+    }
+  ],
+  "news": [
+    {
+      "title": "npm Adds 2FA-Gated Publishing and Package Install Controls Against Supply Chain Attacks",
+      "source": "The Hacker News",
+      "priority": true,
+      "keywords": [
+        "supply chain"
+      ],
+      "published": "Sat, 23 Ma",
+      "summary": "GitHub has rolled out new controls for npm to improve the security of the software supply chain, giving maintainers the ability to explicitly approve a release prior to the packages becoming publicly available for installation.\n\nCalled staged publishing, the feature is now generally available on npm. It mandates that a human maintainer pass a two-factor authentication (2FA) challenge to approve"
+    },
+    {
+      "title": "Packagist Supply Chain Attack Infects 8 Packages Using GitHub-Hosted Linux Malware",
+      "source": "The Hacker News",
+      "priority": true,
+      "keywords": [
+        "malware",
+        "supply chain"
+      ],
+      "published": "Sat, 23 Ma",
+      "summary": "A new \"coordinated\" supply chain attack campaign has impacted eight packages on Packagist including malicious code designed to run a Linux binary retrieved from a GitHub Releases URL.\n\n\"Although the affected packages were all Composer packages, the malicious code was not added to composer.json,\" Socket said. \"Instead, it was inserted into package.json, targeting projects that ship JavaScript"
+    },
+    {
+      "title": "Claude Mythos AI Finds 10,000 High-Severity Flaws in Widely Used Software",
+      "source": "The Hacker News",
+      "priority": true,
+      "keywords": [
+        "critical"
+      ],
+      "published": "Sat, 23 Ma",
+      "summary": "Anthropic on Friday disclosed that Project Glasswing has helped uncover more than 10,000 high- or critical-severity vulnerabilities across some of the most \"systemically\" important software across the world since the cybersecurity initiative went live last month.\n\n Project Glasswing  is a defensive effort launched by the artificial intelligence (AI) company to secure critical global software"
+    },
+    {
+      "title": "Laravel-Lang PHP Packages Compromised to Deliver Cross-Platform Credential Stealer",
+      "source": "The Hacker News",
+      "priority": true,
+      "keywords": [
+        "credential",
+        "supply chain"
+      ],
+      "published": "Sat, 23 Ma",
+      "summary": "Cybersecurity researchers have flagged a fresh software supply chain attack campaign that has targeted multiple PHP packages belonging to  Laravel-Lang to deliver a comprehensive credential-stealing framework.\n\nThe affected packages include -\n\n\n  laravel-lang/lang\n  laravel-lang/http-statuses\n  laravel-lang/attributes\n  laravel-lang/actions\n\n\"The timing and pattern of the newly published tags"
+    },
+    {
+      "title": "LiteSpeed cPanel Plugin CVE-2026-48172 Exploited to Run Scripts as Root",
+      "source": "The Hacker News",
+      "priority": true,
+      "keywords": [
+        "exploit",
+        "vulnerability",
+        "cve"
+      ],
+      "published": "Sat, 23 Ma",
+      "summary": "A maximum-severity security vulnerability impacting LiteSpeed User-End cPanel Plugin has come under active exploitation in the wild.\n\nThe flaw, tracked as CVE-2026-48172 (CVSS score: 10.0), relates to an instance of incorrect privilege assignment that an attacker could abuse to run arbitrary scripts with elevated permissions.\n\n\"Any cPanel user (including an attacker or a compromised account) may"
+    },
+    {
+      "title": "Drupal Core SQL Injection Bug Actively Exploited, Added to CISA KEV",
+      "source": "The Hacker News",
+      "priority": true,
+      "keywords": [
+        "critical",
+        "exploit",
+        "vulnerability",
+        "patch",
+        "cve"
+      ],
+      "published": "Sat, 23 Ma",
+      "summary": "The U.S. Cybersecurity and Infrastructure Security Agency (CISA) has added a recently patched critical security flaw impacting Drupal Core to its Known Exploited Vulnerabilities (KEV) catalog, based on evidence of active exploitation.\n\nThe vulnerability in question is CVE-2026-9082 (CVSS score: 6.5), an SQL injection vulnerability affecting all supported versions of Drupal Core.\n\n\"Drupal Core"
+    },
+    {
+      "title": "First VPN Dismantled in Global Takedown Over Use by 25 Ransomware Groups",
+      "source": "The Hacker News",
+      "priority": true,
+      "keywords": [
+        "ransomware"
+      ],
+      "published": "Fri, 22 Ma",
+      "summary": "Authorities in Europe and North America have announced the dismantling of a criminal virtual private network (VPN) service used by criminal actors to obscure the origins of ransomware attacks, data theft, scanning, and denial-of-service attacks.\n\nCodenamed Operation Saffron, the  disruption  of First VPN Service was led by France and the Netherlands, with several other nations supporting the"
+    },
+    {
+      "title": "Ghostwriter Targets Ukraine Government Entities with Prometheus Phishing Malware",
+      "source": "The Hacker News",
+      "priority": true,
+      "keywords": [
+        "malware",
+        "phishing"
+      ],
+      "published": "Fri, 22 Ma",
+      "summary": "The Belarus-aligned threat actor known as Ghostwriter (aka UAC-0057 and UNC1151) has been observed using lures related to Prometheus, a Ukrainian online learning platform, to target government organizations in the country.\n\nThe activity, per the Computer Emergency Response Team of Ukraine (CERT-UA), involves sending phishing emails to government entities using compromised accounts. It's been"
+    },
+    {
+      "title": "Megalodon GitHub Attack Targets 5,561 Repos with Malicious CI/CD Workflows",
+      "source": "The Hacker News",
+      "priority": false,
+      "keywords": [],
+      "published": "Fri, 22 Ma",
+      "summary": "Cybersecurity researchers have disclosed details of a new automated campaign called Megalodon that has pushed 5,718 malicious commits to 5,561 GitHub repositories within a six-hour window.\n\n\"Using throwaway accounts and forged author identities (build-bot, auto-ci, ci-bot, pipeline-bot), the attacker injected GitHub Actions workflows containing base64-encoded bash payloads that exfiltrate CI"
+    },
+    {
+      "title": "Making Vulnerable Drivers Exploitable Without Hardware - The BYOVD Perspective",
+      "source": "The Hacker News",
+      "priority": true,
+      "keywords": [
+        "exploit",
+        "vulnerability"
+      ],
+      "published": "Fri, 22 Ma",
+      "summary": "1 Introduction\n\nThis article provides a technical analysis of how many Windows kernel mode drivers can be interacted with from user mode without the hardware they were developed for. This work was motivated by driver-oriented vulnerability research and the need to evaluate the exploitability of individual findings, which frequently affect code whose reachability is hardware-gated. The"
+    },
+    {
+      "title": "Italy disrupts CINEMAGOAL piracy app that stole streaming auth codes",
+      "source": "BleepingComputer",
+      "priority": false,
+      "keywords": [],
+      "published": "Sat, 23 Ma",
+      "summary": "Italian authorities have dismantled a piracy ecosystem centered around the CINEMAGOAL app that provided access to various streaming platforms, including Netflix, Disney+, and Spotify. [...]"
+    },
+    {
+      "title": "Netherlands seizes 800 servers of hosting firm enabling cyberattacks",
+      "source": "BleepingComputer",
+      "priority": false,
+      "keywords": [],
+      "published": "Fri, 22 Ma",
+      "summary": "Financial crime investigators in the Netherlands (FIOD) arrested two men and seized 800 servers linked to a web hosting company that enabled cyberattacks, interference operations, and disinformation campaigns. [...]"
+    },
+    {
+      "title": "Former US execs plead guilty to aiding tech support scammers",
+      "source": "BleepingComputer",
+      "priority": false,
+      "keywords": [],
+      "published": "Fri, 22 Ma",
+      "summary": "Two former executives of a call-tracking and analytics company pleaded guilty to concealing a years-long tech support fraud scheme that victimized individuals worldwide. [...]"
+    },
+    {
+      "title": "Trend Micro warns of Apex One zero-day exploited in the wild",
+      "source": "BleepingComputer",
+      "priority": true,
+      "keywords": [
+        "zero-day",
+        "exploit",
+        "vulnerability"
+      ],
+      "published": "Fri, 22 Ma",
+      "summary": "Japanese cybersecurity software company Trend Micro has addressed an Apex One zero-day vulnerability exploited in attacks targeting Windows systems. [...]"
+    },
+    {
+      "title": "Drupal: Critical SQL injection flaw now targeted in attacks",
+      "source": "BleepingComputer",
+      "priority": true,
+      "keywords": [
+        "critical",
+        "exploit",
+        "vulnerability"
+      ],
+      "published": "Fri, 22 Ma",
+      "summary": "Drupal is warning that hackers are attempting to exploit a \"highly critical\" SQL injection vulnerability announced earlier this week. [...]"
+    },
+    {
+      "title": "Why Chargebacks are Just One Piece of the Fraud Puzzle",
+      "source": "BleepingComputer",
+      "priority": false,
+      "keywords": [],
+      "published": "Fri, 22 Ma",
+      "summary": "Fraud losses don't stop at chargebacks. False declines, account takeovers, and abuse also damage revenue and trust. IPQS breaks down why fraud teams need broader visibility into risk and customer impact. [...]"
+    },
+    {
+      "title": "Ubiquiti patches three max severity UniFi OS vulnerabilities",
+      "source": "BleepingComputer",
+      "priority": true,
+      "keywords": [
+        "exploit",
+        "patch"
+      ],
+      "published": "Fri, 22 Ma",
+      "summary": "Ubiquiti has released security updates to patch three maximum severity vulnerabilities in UniFi OS that can be exploited by remote attackers without privileges. [...]"
+    },
+    {
+      "title": "US and Canada arrest and charge suspected Kimwolf botnet admin",
+      "source": "BleepingComputer",
+      "priority": false,
+      "keywords": [],
+      "published": "Fri, 22 Ma",
+      "summary": "U.S. and Canadian authorities arrested and charged a Canadian man with operating the KimWolf distributed denial-of-service (DDoS) botnet, which infected nearly two million devices worldwide. [...]"
+    },
+    {
+      "title": "Google accidentally exposed details of unfixed Chromium flaw",
+      "source": "BleepingComputer",
+      "priority": true,
+      "keywords": [
+        "remote code"
+      ],
+      "published": "Thu, 21 Ma",
+      "summary": "Google has accidentally leaked details about an unfixed issue in Chromium that keeps JavaScript running in the background even when the browser is closed, allowing remote code execution on the device. [...]"
+    },
+    {
+      "title": "Apple blocked over $11 billion in App Store fraud in 6 years",
+      "source": "BleepingComputer",
+      "priority": false,
+      "keywords": [],
+      "published": "Thu, 21 Ma",
+      "summary": "Apple revealed that it blocked over $11 billion in fraudulent App Store transactions over the last six years, more than $2.2 billion in potentially fraudulent App Store transactions in 2025 alone. [...]"
+    },
+    {
+      "title": "Lawmakers Demand Answers as CISA Tries to Contain Data Leak",
+      "source": "Krebs on Security",
+      "priority": true,
+      "keywords": [
+        "breach",
+        "credential",
+        "data leak"
+      ],
+      "published": "Fri, 22 Ma",
+      "summary": "Lawmakers in both houses of Congress are demanding answers from the U.S. Cybersecurity &#038; Infrastructure Security Agency (CISA) after KrebsOnSecurity reported this week that a CISA contractor intentionally published AWS GovCloud keys and a vast trove of other agency secrets on a public GitHub account. The inquiry comes as CISA is still struggling to contain the breach and invalidate the leaked credentials."
+    },
+    {
+      "title": "Alleged Kimwolf Botmaster \u2018Dort\u2019 Arrested, Charged in U.S. and Canada",
+      "source": "Krebs on Security",
+      "priority": false,
+      "keywords": [],
+      "published": "Thu, 21 Ma",
+      "summary": "Canadian authorities on Wednesday arrested a 23-year-old Ottawa man on suspicion of building and operating Kimwolf, a fast spreading Internet-of-Things botnet that enslaved millions of devices for use in a series of massive distributed denial-of-service (DDoS) attacks over the past six months. KrebsOnSecurity publicly named the suspect in February 2026 after the accused launched a volley of DDoS, doxing and swatting campaigns against this author and a security researcher. He now faces criminal h"
+    },
+    {
+      "title": "CISA Admin Leaked AWS GovCloud Keys on Github",
+      "source": "Krebs on Security",
+      "priority": true,
+      "keywords": [
+        "credential",
+        "data leak"
+      ],
+      "published": "Mon, 18 Ma",
+      "summary": "Until this past weekend, a contractor for the Cybersecurity &#038; Infrastructure Security Agency (CISA) maintained a public GitHub repository that exposed credentials to several highly privileged AWS GovCloud accounts and a large number of internal CISA systems. Security experts said the public archive included files detailing how CISA builds, tests and deploys software internally, and that it represents one of the most egregious government data leaks in recent history."
+    },
+    {
+      "title": "Patch Tuesday, May 2026 Edition",
+      "source": "Krebs on Security",
+      "priority": true,
+      "keywords": [
+        "patch"
+      ],
+      "published": "Tue, 12 Ma",
+      "summary": "Artificial intelligence platforms may be just as susceptible to social engineering as human beings, but they are proving remarkably good at finding security vulnerabilities in human-made computer code. That reality is on full display this month with some of the more widely-used software makers -- including Apple, Google, Microsoft, Mozilla and Oracle -- fixing near record volumes of security bugs, and/or quickening the tempo of their patch releases."
+    },
+    {
+      "title": "Canvas Breach Disrupts Schools & Colleges Nationwide",
+      "source": "Krebs on Security",
+      "priority": true,
+      "keywords": [
+        "breach"
+      ],
+      "published": "Fri, 08 Ma",
+      "summary": "An ongoing data extortion attack targeting the widely-used education technology platform Canvas disrupted classes and coursework at school districts and universities across the United States today, after a cybercrime group defaced the service's login page with a ransom demand that threatened to leak data from 275 million students and faculty across nearly 9,000 educational institutions."
+    }
+  ],
+  "ports": [
+    {
+      "hostname": "northstar-web01",
+      "ip": "172.29.0.10",
+      "scannedAt": "2026-05-23 17:59 UTC",
+      "openCount": 0,
+      "ports": []
+    },
+    {
+      "hostname": "northstar-web02",
+      "ip": "172.29.0.11",
+      "scannedAt": "2026-05-23 17:59 UTC",
+      "openCount": 0,
+      "ports": []
+    },
+    {
+      "hostname": "northstar-ssh01",
+      "ip": "172.29.0.12",
+      "scannedAt": "2026-05-23 17:59 UTC",
+      "openCount": 0,
+      "ports": []
+    },
+    {
+      "hostname": "localhost",
+      "ip": "127.0.0.1",
+      "scannedAt": "2026-05-23 17:59 UTC",
+      "openCount": 0,
+      "ports": []
+    }
+  ],
+  "breaches": [
+    {
+      "name": "SimulatedCorpBreach2023",
+      "domain": "northstar-analytics.local",
+      "severity": "CRITICAL",
+      "date": "2023-08-15",
+      "pwnCount": 4821,
+      "synthetic": true,
+      "classes": [
+        "Email addresses",
+        "Passwords",
+        "Usernames"
+      ],
+      "description": "[SYNTHETIC DATA \u2014 for demo purposes only] Simulated breach affecting corporate email accounts. Credentials and usernames were included in the exposed dataset."
+    },
+    {
+      "name": "SimulatedSaasBreach2024",
+      "domain": "northstar-analytics.local",
+      "severity": "MEDIUM",
+      "date": "2024-02-20",
+      "pwnCount": 1200,
+      "synthetic": true,
+      "classes": [
+        "Email addresses",
+        "IP addresses"
+      ],
+      "description": "[SYNTHETIC DATA \u2014 for demo purposes only] Simulated SaaS vendor breach affecting organization email addresses."
+    }
+  ],
+  "ipRep": [
+    {
+      "ip": "172.29.0.10",
+      "classification": "UNKNOWN",
+      "ports": [],
+      "vulns": [],
+      "note": "Private/lab IP \u2014 not queried against public APIs"
+    },
+    {
+      "ip": "172.29.0.11",
+      "classification": "UNKNOWN",
+      "ports": [],
+      "vulns": [],
+      "note": "Private/lab IP \u2014 not queried against public APIs"
+    },
+    {
+      "ip": "172.29.0.12",
+      "classification": "UNKNOWN",
+      "ports": [],
+      "vulns": [],
+      "note": "Private/lab IP \u2014 not queried against public APIs"
+    },
+    {
+      "ip": "127.0.0.1",
+      "classification": "UNKNOWN",
+      "ports": [],
+      "vulns": [],
+      "note": "Private/lab IP \u2014 not queried against public APIs"
+    }
+  ],
+  "pipelineModules": [
+    {
+      "name": "cve_collector",
+      "description": "Fetches real CVEs from NIST NVD API",
+      "lastRun": "live",
+      "health": "ok",
+      "records": 30
+    },
+    {
+      "name": "kev_collector",
+      "description": "Downloads CISA's actively-exploited CVE catalog",
+      "lastRun": "live",
+      "health": "ok",
+      "records": 1602
+    },
+    {
+      "name": "news_collector",
+      "description": "Aggregates security news from RSS feeds",
+      "lastRun": "live",
+      "health": "ok",
+      "records": 50
+    },
+    {
+      "name": "breach_monitor",
+      "description": "Checks domain breach history (HIBP / synthetic)",
+      "lastRun": "live",
+      "health": "synthetic",
+      "records": 2
+    },
+    {
+      "name": "ip_reputation",
+      "description": "Enriches IPs with Shodan + GreyNoise",
+      "lastRun": "live",
+      "health": "ok",
+      "records": 4
+    },
+    {
+      "name": "scanner",
+      "description": "TCP port scan of lab Docker containers",
+      "lastRun": "live",
+      "health": "ok",
+      "records": 0
+    },
+    {
+      "name": "correlator",
+      "description": "Rule-based correlation across sources",
+      "lastRun": "live",
+      "health": "ok",
+      "records": 3
+    },
+    {
+      "name": "risk_scorer",
+      "description": "Explainable scoring with asset criticality",
+      "lastRun": "live",
+      "health": "ok",
+      "records": 3
+    }
+  ],
+  "ruleCatalog": [
+    {
+      "id": "CORR-001",
+      "name": "Rule 001",
+      "purpose": "Detect when an organization's RDP infrastructure is both publicly reachable and referenced in external exposure data \u2014 a combination that strongly suggests credential-based intrusion risk.",
+      "weight": 15
+    },
+    {
+      "id": "CORR-002",
+      "name": "Rule 002",
+      "purpose": "Detect when SSH services are reachable AND external signals reference SSH credentials or key material for the organization.",
+      "weight": 12
+    },
+    {
+      "id": "CORR-003",
+      "name": "Rule 003",
+      "purpose": "Detect VPN credential exposure \u2014 the highest-impact initial access vector because VPN auth grants trusted-network status.",
+      "weight": 25
+    },
+    {
+      "id": "CORR-004",
+      "name": "Rule 004",
+      "purpose": "Identify exploitable web infrastructure \u2014 when web-relevant CVEs exist alongside open web ports on monitored hosts.",
+      "weight": 10
+    },
+    {
+      "id": "CORR-005",
+      "name": "Rule 005",
+      "purpose": "Identify corporate email addresses surfaced in breach data \u2014 high-value targets for spear phishing, credential stuffing, and social engineering.",
+      "weight": 8
+    },
+    {
+      "id": "CORR-006",
+      "name": "Rule 006",
+      "purpose": "Surface CVEs confirmed as actively exploited in the wild (CISA KEV) AND linked to running services on monitored hosts.",
+      "weight": 18
+    },
+    {
+      "id": "CORR-007",
+      "name": "Rule 007",
+      "purpose": "Detect the credential stuffing prerequisite condition: passwords leaked in breaches AND login-facing services exposed to attackers.",
+      "weight": 22
+    },
+    {
+      "id": "CORR-008",
+      "name": "Rule 008",
+      "purpose": "Detect sustained adversary interest by counting the number of independent breach/exposure signals affecting the same organization.",
+      "weight": 8
+    }
+  ],
+  "dataSources": [
+    {
+      "key": "nvd",
+      "name": "NIST National Vulnerability Database",
+      "type": "Public API (no auth required)",
+      "license": "Public domain (U.S. Government)",
+      "refresh": "Pulled on every pipeline run (last 7 days)",
+      "url": "https://nvd.nist.gov/developers/vulnerabilities",
+      "description": "Authoritative U.S. government database of every publicly known software vulnerability. Each entry has a CVE ID, CVSS severity score, and a description of the affected software."
+    },
+    {
+      "key": "cisakev",
+      "name": "CISA Known Exploited Vulnerabilities Catalog",
+      "type": "Public JSON feed (no auth required)",
+      "license": "Public domain (U.S. Government)",
+      "refresh": "Full catalog downloaded on every pipeline run",
+      "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+      "description": "CISA's authoritative list of CVEs that have been confirmed as actively exploited in real attacks. Federal agencies are required to remediate KEV entries within 2\u20133 weeks."
+    },
+    {
+      "key": "haveibeenpwned",
+      "name": "HaveIBeenPwned (HIBP)",
+      "type": "Public API (free key required for domain queries)",
+      "license": "Used per HIBP Terms of Service",
+      "refresh": "Queried per configured monitored domain",
+      "url": "https://haveibeenpwned.com/API/v3",
+      "description": "Public service maintained by Troy Hunt. Tells you whether email addresses or domains have appeared in published breach datasets. Returns breach metadata only \u2014 never actual passwords or PII."
+    },
+    {
+      "key": "shodaninternetdb",
+      "name": "Shodan InternetDB",
+      "type": "Public API (no auth required)",
+      "license": "Used per Shodan Terms of Service",
+      "refresh": "Queried per IP discovered by lab port scanner",
+      "url": "https://internetdb.shodan.io/",
+      "description": "Free Shodan endpoint that returns known open ports, software (CPEs), associated CVEs, and hostnames for any public IP address. Skipped for private/RFC1918 addresses."
+    },
+    {
+      "key": "greynoise",
+      "name": "GreyNoise Community API",
+      "type": "Public API (free community key required)",
+      "license": "Used per GreyNoise Terms of Service",
+      "refresh": "Queried per IP discovered by lab port scanner",
+      "url": "https://docs.greynoise.io/reference/get_v3-community-ip",
+      "description": "GreyNoise classifies IPs as benign (known scanners), malicious (observed attackers), or unknown. Used to enrich scan results with real-world reputation context."
+    },
+    {
+      "key": "rssfeeds",
+      "name": "Security News RSS Feeds",
+      "type": "Public RSS feeds",
+      "license": "Public news content",
+      "refresh": "Pulled on every pipeline run",
+      "url": "https://feeds.feedburner.com/TheHackersNews",
+      "description": "Aggregates from The Hacker News, BleepingComputer, Krebs on Security, Dark Reading, and SecurityWeek. Used for situational awareness and to flag priority items based on keyword matching."
+    },
+    {
+      "key": "labscanner",
+      "name": "CyberFusion Lab Port Scanner",
+      "type": "Internal \u2014 TCP socket scan of localhost + Docker lab containers only",
+      "license": "Lab-safe by design",
+      "refresh": "Runs on every pipeline execution unless --no-scan flag set",
+      "url": "internal \u2014 scanning/scanner.py",
+      "description": "Pure-Python TCP scanner that probes a fixed set of ports against pre-defined lab targets (localhost + 172.29.0.0/24 Docker subnet). Never targets external systems."
+    },
+    {
+      "key": "synthetic",
+      "name": "Synthetic Lab Data",
+      "type": "Generated locally for demo/lab",
+      "license": "N/A \u2014 fictional data",
+      "refresh": "Generated each pipeline run",
+      "url": "internal \u2014 data_collection/exposure_simulator.py",
+      "description": "Realistic synthetic exposure signals generated locally when no breach API key is configured. Every record is clearly tagged as synthetic in both code and UI."
+    }
+  ],
+  "briefing": {
+    "generatedAt": "2026-05-23 17:59 UTC",
+    "backend": "Pipeline-derived (no external LLM)",
+    "overallRisk": "CRITICAL",
+    "sections": [
+      {
+        "title": "Overall Risk Level",
+        "body": "Current exposure is rated CRITICAL (aggregate 72/100), driven primarily by VPN Credential Exposure. 1 critical and 1 high findings are open."
+      },
+      {
+        "title": "What Requires Attention",
+        "body": "The highest-priority item is VPN Credential Exposure (CORR-003) affecting vpn01.northstar-analytics.local. 1."
+      },
+      {
+        "title": "Active Exploitation Activity",
+        "body": "No in-scope findings are tied to actively-exploited (KEV) CVEs in this run."
+      },
+      {
+        "title": "Exposed Services",
+        "body": "Open services observed on lab hosts: northstar-web01 (0 port(s)), northstar-web02 (0 port(s)), northstar-ssh01 (0 port(s)), localhost (0 port(s))."
+      },
+      {
+        "title": "Recommended Actions",
+        "body": "1. Force-reset ALL VPN user credentials immediately. 2. Enable MFA on VPN access. 3. Review VPN access logs for the past 30 days. 4. Consider temporary VPN lockdown while investigating."
+      }
+    ]
+  }
+};
+</script>
+<script type="text/babel" data-presets="react">
+// CyberFusion — shared components
+const { useState, useEffect, useMemo, useRef } = React;
+
+// ── Icons (Lucide-style hand-rolled SVG) ─────────────────────────────
+const Icon = ({ name, size = 16, strokeWidth = 2, ...rest }) => {
+  const s = size;
+  const props = { width: s, height: s, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth, strokeLinecap: "round", strokeLinejoin: "round", ...rest };
+  const paths = {
+    shield: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>,
+    home: <><path d="M3 12 12 3l9 9"/><path d="M5 10v10h14V10"/></>,
+    sparkles: <><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/></>,
+    feed: <><circle cx="5" cy="19" r="2"/><path d="M3 5a16 16 0 0 1 16 16"/><path d="M3 11a10 10 0 0 1 10 10"/></>,
+    radar: <><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 4"/></>,
+    link: <><path d="M9 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M15 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></>,
+    flask: <><path d="M9 3v6l-5 9a3 3 0 0 0 2.6 4.5h10.8A3 3 0 0 0 20 18l-5-9V3"/><path d="M9 3h6"/></>,
+    info: <><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></>,
+    chevron: <><path d="m9 18 6-6-6-6"/></>,
+    chevronDown: <><path d="m6 9 6 6 6-6"/></>,
+    bell: <><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></>,
+    refresh: <><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></>,
+    download: <><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></>,
+    external: <><path d="M7 7h10v10"/><path d="M7 17 17 7"/></>,
+    plus: <><path d="M12 5v14M5 12h14"/></>,
+    filter: <><path d="M3 6h18l-7 9v5l-4-2v-3z"/></>,
+    search: <><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></>,
+    arrowUp: <><path d="M12 19V5M5 12l7-7 7 7"/></>,
+    arrowDown: <><path d="M12 5v14M5 12l7 7 7-7"/></>,
+    check: <><path d="M20 6 9 17l-5-5"/></>,
+    flame: <><path d="M8.5 14.5C9 12 11.5 11 12 8c.5 3 3 4.5 3.5 6.5a3.5 3.5 0 1 1-7 0Z"/><path d="M12 22a7 7 0 0 0 7-7c0-3.5-2.5-5-3-7-1.5-3-4-5-4-5s-2.5 2-4 5c-.5 2-3 3.5-3 7a7 7 0 0 0 7 7z"/></>,
+    bug: <><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M12 6V4M5 9l3 1M19 9l-3 1M5 16l3-1M19 16l-3-1M5 13h3M16 13h3"/></>,
+    eye: <><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></>,
+    map: <><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></>,
+    cog: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></>,
+    server: <><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 8h.01M7 17h.01"/></>,
+    network: <><rect x="9" y="2" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><path d="M12 8v4M12 12H5v4M12 12h7v4"/></>,
+    file: <><path d="M14 3v6h6"/><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/></>,
+    play: <><polygon points="6 4 20 12 6 20 6 4"/></>,
+    list: <><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>,
+  };
+  return <svg {...props}>{paths[name] || null}</svg>;
+};
+
+// ── Badge ────────────────────────────────────────────────────────────
+const sevClass = (s) => ({ CRITICAL: "crit", HIGH: "high", MEDIUM: "med", LOW: "low" }[(s||"").toUpperCase()] || "unknown");
+const Badge = ({ severity, children, solid, size, ...rest }) => (
+  <span className={`badge ${sevClass(severity)}${solid ? " solid" : ""}${size === "sm" ? " sm" : ""}`} {...rest}>
+    {!solid && <span className="badge-dot" />}
+    {children || severity}
+  </span>
+);
+const KevBadge = () => (
+  <span className="badge kev">
+    <Icon name="flame" size={11} />
+    KEV · ACTIVELY EXPLOITED
+  </span>
+);
+
+// ── Sidebar ──────────────────────────────────────────────────────────
+const Sidebar = ({ page, onNav, summary }) => {
+  const nav = [
+    { key: "executive", icon: "home", label: "Executive View" },
+    { key: "briefing",  icon: "sparkles", label: "AI Briefing" },
+    { key: "findings",  icon: "link", label: "Correlated Findings", count: summary.total, countCrit: summary.critical > 0 },
+    { key: "feed",      icon: "feed", label: "Threat Feed" },
+    { key: "exposure",  icon: "radar", label: "Exposure & Breach" },
+  ];
+  const meta = [
+    { key: "methodology", icon: "flask", label: "Methodology" },
+    { key: "architecture", icon: "info", label: "Architecture" },
+  ];
+  return (
+    <aside className="sidebar">
+      <div className="sb-brand">
+        <div className="sb-mark">CF</div>
+        <div>
+          <div className="sb-name">CyberFusion</div>
+          <div className="sb-sub">CTI · Risk Fusion</div>
+        </div>
+      </div>
+      <div className="sb-org">
+        <div className="sb-org-label">Organization</div>
+        <div className="sb-org-name">Northstar Analytics</div>
+        <div className="sb-org-scope">northstar-analytics.local</div>
+      </div>
+      <div className="sb-section">
+        <div className="sb-section-label">Workspace</div>
+        <ul className="sb-nav">
+          {nav.map(n => (
+            <li key={n.key}>
+              <button className={"sb-nav-item" + (page === n.key ? " active" : "")} onClick={() => onNav(n.key)}>
+                <span className="sb-nav-icon"><Icon name={n.icon} size={15} /></span>
+                {n.label}
+                {n.count != null && <span className={"sb-nav-count" + (n.countCrit ? " crit" : "")}>{n.count}</span>}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="sb-section">
+        <div className="sb-section-label">Reference</div>
+        <ul className="sb-nav">
+          {meta.map(n => (
+            <li key={n.key}>
+              <button className={"sb-nav-item" + (page === n.key ? " active" : "")} onClick={() => onNav(n.key)}>
+                <span className="sb-nav-icon"><Icon name={n.icon} size={15} /></span>
+                {n.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="sb-foot">
+        <div className="sb-status">
+          <span className="sb-dot" />
+          Pipeline healthy
+        </div>
+        <div>Last run · {window.CFData.org.lastRun}</div>
+        <div>Next run · {window.CFData.org.nextRun}</div>
+        <button className="sb-refresh">
+          <Icon name="refresh" size={12} />
+          Run pipeline now
+        </button>
+      </div>
+    </aside>
+  );
+};
+
+// ── Topbar ───────────────────────────────────────────────────────────
+const PAGE_LABELS = {
+  executive: "Executive View",
+  briefing: "AI Briefing",
+  findings: "Correlated Findings",
+  feed: "Threat Feed",
+  exposure: "Exposure & Breach",
+  methodology: "Methodology",
+  architecture: "Architecture",
+  detail: "Finding Detail",
+};
+const Topbar = ({ page, subPage, onNav }) => (
+  <header className="topbar">
+    <div className="crumbs">
+      <span>Workspace</span>
+      <span className="crumb-sep">›</span>
+      {page === "detail" ? (
+        <>
+          <a className="btn btn-ghost btn-sm" onClick={() => onNav("findings")} style={{padding:"4px 6px"}}>Correlated Findings</a>
+          <span className="crumb-sep">›</span>
+          <strong>{subPage}</strong>
+        </>
+      ) : (
+        <strong>{PAGE_LABELS[page]}</strong>
+      )}
+    </div>
+    <div className="topbar-actions">
+      <input className="search" placeholder="Search findings, CVEs, hosts…" />
+      <button className="icon-btn" title="Notifications"><Icon name="bell" size={15} /></button>
+      <button className="icon-btn" title="Settings"><Icon name="cog" size={15} /></button>
+      <div className="avatar">SA</div>
+    </div>
+  </header>
+);
+
+// ── Card ─────────────────────────────────────────────────────────────
+const Card = ({ title, sub, action, foot, children, padded = true, className = "" }) => (
+  <div className={`card ${className}`}>
+    {(title || action) && (
+      <div className="card-head">
+        <div>
+          {title && <h3 className="card-title">{title}</h3>}
+          {sub && <div className="card-sub">{sub}</div>}
+        </div>
+        {action}
+      </div>
+    )}
+    <div className={padded ? "card-body" : ""}>{children}</div>
+    {foot && <div className="card-foot">{foot}</div>}
+  </div>
+);
+
+// ── Score ring (SVG donut) ───────────────────────────────────────────
+const ScoreRing = ({ value, max = 100, size = 132, stroke = 12, color }) => {
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const pct = Math.min(1, value / max);
+  const dash = pct * c;
+  return (
+    <div className="score-ring" style={{ width: size, height: size }}>
+      <svg width={size} height={size}>
+        <circle cx={size/2} cy={size/2} r={r} stroke="#eef0f4" strokeWidth={stroke} fill="none" />
+        <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} fill="none"
+          strokeDasharray={`${dash} ${c}`} strokeLinecap="round" style={{transition: "stroke-dasharray .6s"}} />
+      </svg>
+      <div className="score-ring-num">{Math.round(value)}</div>
+    </div>
+  );
+};
+
+// Distribution bar
+const DistBar = ({ data }) => {
+  const total = data.reduce((s, d) => s + d.value, 0) || 1;
+  return (
+    <>
+      <div className="distbar">
+        {data.map((d, i) => (
+          <span key={i} style={{ width: `${(d.value/total)*100}%`, background: d.color }} title={`${d.label}: ${d.value}`} />
+        ))}
+      </div>
+      <div className="dist-legend">
+        {data.map((d, i) => (
+          <div key={i}>
+            <span className="sw" style={{ background: d.color }} />
+            {d.label} <strong style={{color:"var(--text-1)"}}>{d.value}</strong>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+};
+
+// Donut for severity distribution
+const SeverityDonut = ({ summary }) => {
+  const segs = [
+    { key: "critical", value: summary.critical, color: "var(--crit)", label: "Critical" },
+    { key: "high",     value: summary.high,     color: "var(--high)", label: "High" },
+    { key: "medium",   value: summary.medium,   color: "var(--med)",  label: "Medium" },
+    { key: "low",      value: summary.low,      color: "var(--low)",  label: "Low" },
+  ];
+  const total = segs.reduce((s, d) => s + d.value, 0) || 1;
+  const size = 200, stroke = 22;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  let offset = 0;
+  return (
+    <div className="donut" style={{ width: size, height: size }}>
+      <svg width={size} height={size}>
+        <circle cx={size/2} cy={size/2} r={r} stroke="#eef0f4" strokeWidth={stroke} fill="none" />
+        {segs.map((s, i) => {
+          if (!s.value) return null;
+          const len = (s.value / total) * c;
+          const el = (
+            <circle key={i} cx={size/2} cy={size/2} r={r}
+              stroke={resolveCSSVar(s.color)} strokeWidth={stroke} fill="none"
+              strokeDasharray={`${len} ${c - len}`}
+              strokeDashoffset={-offset}
+            />
+          );
+          offset += len;
+          return el;
+        })}
+      </svg>
+      <div className="donut-center">
+        <div>
+          <div className="num">{total}</div>
+          <div className="lbl">Findings</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+function resolveCSSVar(v) {
+  if (typeof v !== "string" || !v.startsWith("var(")) return v;
+  const name = v.slice(4, -1).trim();
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "#888";
+}
+
+// ── Stacked area trend ───────────────────────────────────────────────
+const TrendBars = ({ trend }) => {
+  const max = Math.max(...trend.map(t => t.crit + t.high + t.med + t.low));
+  return (
+    <div>
+      <div className="sparkbars">
+        {trend.map((t, i) => {
+          const total = t.crit + t.high + t.med + t.low;
+          const h = (total / max) * 100;
+          return (
+            <div className="bar" key={i} style={{ height: "100%", background: "transparent" }} title={`${t.d} · C${t.crit} H${t.high} M${t.med} L${t.low}`}>
+              <div style={{ height: `${100 - h}%` }} />
+              <span className="seg crit" style={{ height: `${(t.crit/max)*100}%` }} />
+              <span className="seg high" style={{ height: `${(t.high/max)*100}%` }} />
+              <span className="seg med"  style={{ height: `${(t.med/max)*100}%` }} />
+              <span className="seg low"  style={{ height: `${(t.low/max)*100}%` }} />
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 11, color: "var(--text-3)" }}>
+        <span>{trend[0].d}</span>
+        <span>{trend[Math.floor(trend.length/2)].d}</span>
+        <span>{trend[trend.length-1].d}</span>
+      </div>
+    </div>
+  );
+};
+
+// ── Mini horizontal bar chart for finding scores ────────────────────
+const FindingScoreBars = ({ findings }) => {
+  const max = 100;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {findings.map(f => (
+        <div key={f.rule_id}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5, fontSize: 12.5 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="mono" style={{ color: "var(--text-3)", fontSize: 11.5 }}>{f.rule_id}</span>
+              <span style={{ fontWeight: 600 }}>{f.rule_name}</span>
+            </div>
+            <span className="mono" style={{ fontWeight: 700 }}>{f.risk_score}</span>
+          </div>
+          <div style={{ height: 8, background: "var(--border)", borderRadius: 4, overflow: "hidden", position: "relative" }}>
+            <div style={{
+              width: `${(f.risk_score/max)*100}%`, height: "100%",
+              background: `var(--${sevClass(f.risk_label)})`,
+              borderRadius: 4,
+              transition: "width .6s"
+            }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+Object.assign(window, {
+  Icon, Badge, KevBadge, Sidebar, Topbar, Card, ScoreRing,
+  DistBar, SeverityDonut, TrendBars, FindingScoreBars, sevClass,
+});
+
+
+/* ==== next module ==== */
+
+// Executive View page
+const ExecutiveView = ({ onOpenFinding, onNav }) => {
+  const d = window.CFData;
+  const { riskScore, summary, delta, findings, trend } = d;
+
+  const scoreColor = riskScore.current >= 65 ? "var(--crit)" : riskScore.current >= 45 ? "var(--high)" : riskScore.current >= 25 ? "var(--med)" : "var(--low)";
+  const scoreColorResolved = resolveCSSVar(scoreColor);
+
+  return (
+    <div className="page" data-screen-label="Executive View">
+      <div className="page-head">
+        <div>
+          <h1 className="page-title">Executive Security Summary</h1>
+          <div className="page-sub">Northstar Analytics · <span className="mono">{d.org.scope}</span> · {d.org.environment}</div>
+        </div>
+        <div className="page-actions">
+          <button className="btn"><Icon name="download" size={14} />Export PDF</button>
+          <button className="btn btn-accent" onClick={() => onNav("briefing")}><Icon name="sparkles" size={14} />Generate briefing</button>
+        </div>
+      </div>
+
+      {/* ── Hero: risk score + KPIs ─────────────────────────────── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 16, marginBottom: 16 }}>
+        <Card title="Aggregate Risk Score" sub="Weighted across all findings · updated every pipeline run">
+          <div className="score-big">
+            <ScoreRing value={riskScore.current} color={scoreColorResolved} />
+            <div>
+              <div className="row-gap" style={{ marginBottom: 10 }}>
+                <Badge severity={riskScore.label === "ELEVATED" ? "HIGH" : "MEDIUM"} solid>{riskScore.label}</Badge>
+                <span className="kpi-delta up" style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 3 }}>
+                  <Icon name="arrowUp" size={12} /> {riskScore.current - riskScore.previous} pts
+                </span>
+                <span style={{ fontSize: 12, color: "var(--text-3)" }}>vs. previous run</span>
+              </div>
+              <div className="score-band">
+                <span className={"seg" + (riskScore.current > 0 ? " active low" : "")} />
+                <span className={"seg" + (riskScore.current >= 25 ? " active med" : "")} />
+                <span className={"seg" + (riskScore.current >= 45 ? " active high" : "")} />
+                <span className={"seg" + (riskScore.current >= 65 ? " active crit" : "")} />
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text-3)", marginTop: 8 }}>
+                Low · Medium · High · Critical (0–100 scale)
+              </div>
+              <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid var(--border)" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, fontSize: 13 }}>
+                  <div>
+                    <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>Peer median <span className="illus-tag">illustrative</span></div>
+                    <div style={{ fontWeight: 600 }}>{riskScore.benchmark} <span style={{ color: "var(--text-3)", fontWeight: 400, fontSize: 12 }}>· FinSrv segment</span></div>
+                  </div>
+                  <div>
+                    <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>Posture vs. peer <span className="illus-tag">illustrative</span></div>
+                    <div style={{ fontWeight: 600, color: "var(--crit)" }}>+{riskScore.current - riskScore.benchmark} pts above median</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, color: "var(--text-4)", marginTop: 8 }}>Peer benchmarking is illustrative — no external peer dataset is included in this demo.</div>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Card title="30-Day Trend" sub={<span>Daily severity distribution <span className="illus-tag">illustrative</span></span>}>
+          <TrendBars trend={trend} />
+          <div className="divider" />
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 12.5 }}>
+            <div>
+              <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em" }}>Resolved (7d)</div>
+              <div style={{ fontWeight: 700, fontSize: 17, marginTop: 2, color: "var(--low)" }}>{delta.resolved}</div>
+            </div>
+            <div>
+              <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em" }}>New (7d)</div>
+              <div style={{ fontWeight: 700, fontSize: 17, marginTop: 2 }}>{delta.new}</div>
+            </div>
+            <div>
+              <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em" }}>Escalated (7d)</div>
+              <div style={{ fontWeight: 700, fontSize: 17, marginTop: 2 }}>{delta.escalated}</div>
+            </div>
+            <div>
+              <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em" }}>MTTR <span className="illus-tag">illus.</span></div>
+              <div style={{ fontWeight: 700, fontSize: 17, marginTop: 2 }}>4.2<span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-3)" }}> days</span></div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* ── KPIs ─────────────────────────────────────────────────── */}
+      <div className="kpi-grid">
+        <div className="kpi">
+          <div className="kpi-label">Total findings</div>
+          <div className="kpi-value">{summary.total}</div>
+          <div className="kpi-meta">correlated findings this run</div>
+        </div>
+        <div className="kpi">
+          <div className="kpi-label"><span className="kpi-dot" style={{background:"var(--crit)"}}/>Critical</div>
+          <div className="kpi-value" style={{ color: "var(--crit)" }}>{summary.critical}</div>
+          <div className="kpi-meta">highest-severity findings</div>
+        </div>
+        <div className="kpi">
+          <div className="kpi-label"><span className="kpi-dot" style={{background:"var(--high)"}}/>High</div>
+          <div className="kpi-value" style={{ color: "var(--high)" }}>{summary.high}</div>
+          <div className="kpi-meta">high-severity findings</div>
+        </div>
+        <div className="kpi">
+          <div className="kpi-label"><span className="kpi-dot" style={{background:"var(--med)"}}/>Medium</div>
+          <div className="kpi-value" style={{ color: "var(--med)" }}>{summary.medium}</div>
+          <div className="kpi-meta">medium-severity findings</div>
+        </div>
+        <div className="kpi">
+          <div className="kpi-label"><span className="kpi-dot" style={{background:"var(--kev)"}}/>KEV-confirmed</div>
+          <div className="kpi-value" style={{ color: "var(--kev)" }}>{[...new Set(findings.flatMap(f => f.kev_confirmed_cves || []))].length}</div>
+          <div className="kpi-meta">actively exploited (CISA KEV)</div>
+        </div>
+      </div>
+
+      {/* ── Delta alerts ─────────────────────────────────────────── */}
+      {delta.resolved > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <div className="alert info">
+            <Icon name="check" size={16} style={{ marginTop: 1, color: "var(--low)" }} />
+            <div>
+              <div className="alert-strong">{delta.resolved} findings resolved since the last pipeline run.</div>
+              <div style={{ fontSize: 12, marginTop: 2, color: "var(--text-3)" }}>
+                Resolved: {delta.resolvedIds.map(id => <code key={id} className="mono" style={{ marginRight: 8 }}>{id}</code>)}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Distribution + Top findings ──────────────────────────── */}
+      <div className="grid-2" style={{ marginBottom: 16 }}>
+        <Card title="Highest-Risk Findings" sub="Click for full evidence, methodology, and mitigation"
+          action={<button className="btn btn-sm btn-ghost" onClick={() => onNav("findings")}>View all <Icon name="chevron" size={12}/></button>}
+          padded={false}>
+          <div className="list">
+            {findings.map(f => (
+              <div className="list-row" key={f.rule_id} onClick={() => onOpenFinding(f.rule_id)}>
+                <div className={"list-rail " + sevClass(f.risk_label)} />
+                <div>
+                  <div className="list-title">{f.rule_name}</div>
+                  <div className="list-meta">
+                    <Badge severity={f.risk_label} size="sm" />
+                    <span className="mono" style={{ fontSize: 11.5, color: "var(--text-4)" }}>{f.rule_id}</span>
+                    <span>·</span>
+                    <span>{f.mitre_technique}</span>
+                    {f.kev_confirmed_cves && f.kev_confirmed_cves.length > 0 && (<><span>·</span><KevBadge /></>)}
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                  <div className="list-score">{f.risk_score} / 100</div>
+                  <Icon name="chevron" size={14} style={{ color: "var(--text-4)" }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card title="Risk Distribution" sub="Across all open findings">
+          <SeverityDonut summary={summary} />
+          <div className="divider" />
+          <DistBar data={[
+            { label: "Critical", value: summary.critical, color: resolveCSSVar("var(--crit)") },
+            { label: "High",     value: summary.high,     color: resolveCSSVar("var(--high)") },
+            { label: "Medium",   value: summary.medium,   color: resolveCSSVar("var(--med)") },
+            { label: "Low",      value: summary.low || 0, color: resolveCSSVar("var(--low)") },
+          ]} />
+        </Card>
+      </div>
+
+      {/* ── Top recommendations ──────────────────────────────────── */}
+      <div className="grid-2">
+        <Card title="Top Recommended Actions" sub="From critical and high findings"
+          action={<button className="btn btn-sm btn-ghost" onClick={() => onNav("briefing")}>Open briefing <Icon name="external" size={12}/></button>}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {findings.filter(f => f.risk_label === "CRITICAL" || f.risk_label === "HIGH").slice(0, 2).map((f, i) => (
+              <div key={f.rule_id} style={{ borderLeft: `3px solid var(--${sevClass(f.risk_label)})`, paddingLeft: 14 }}>
+                <div className="row-gap" style={{ marginBottom: 6 }}>
+                  <Badge severity={f.risk_label} size="sm" />
+                  <span style={{ fontWeight: 700, fontSize: 13.5 }}>{f.rule_name}</span>
+                  <span className="mono" style={{ fontSize: 11, color: "var(--text-4)" }}>{f.rule_id}</span>
+                </div>
+                <ol style={{ margin: "8px 0 0", paddingLeft: 18, color: "var(--text-2)", lineHeight: 1.55, fontSize: 13 }}>
+                  {parseRec(f.recommendation).slice(0, 4).map((s, j) => <li key={j} style={{ marginBottom: 3 }}>{s}</li>)}
+                </ol>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card title="Asset Criticality Tiers" sub="Score multiplier applied per tier">
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[
+              { tier: 1, label: "Tier 1 — Crown Jewel", mult: "1.5", sev: "CRITICAL" },
+              { tier: 2, label: "Tier 2 — Core Infrastructure", mult: "1.2", sev: "HIGH" },
+              { tier: 3, label: "Tier 3 — Standard", mult: "1.0", sev: "MEDIUM" },
+            ].map(t => {
+              const tierFindings = findings.filter(f => f.asset_tier === t.tier);
+              const assets = [...new Set(tierFindings.flatMap(f => f.affected_assets || []))];
+              return (
+                <div key={t.tier} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 14, alignItems: "center", padding: "12px 14px", background: "var(--surface-2)", borderRadius: 8, border: "1px solid var(--border)" }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 8, background: `var(--${sevClass(t.sev)}-soft)`, color: `var(--${sevClass(t.sev)})`, display: "grid", placeItems: "center", fontWeight: 700, fontSize: 14 }}>T{t.tier}</div>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 13 }}>{t.label}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-3)", marginTop: 2 }}>
+                      {tierFindings.length} finding(s){assets.length ? " · " + assets.join(", ") : ""}
+                    </div>
+                  </div>
+                  <div className="mono" style={{ fontSize: 13, fontWeight: 700, color: `var(--${sevClass(t.sev)})` }}>×{t.mult}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ marginTop: 12, fontSize: 12, color: "var(--text-3)" }}>
+            Risk scores for findings on higher-tier assets are amplified by the multiplier shown. Counts reflect findings in this run.
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+function parseRec(text) {
+  if (!text) return [];
+  text = text.trim();
+  if (/\d+\.\s+/.test(text)) {
+    return text.split(/\s*\d+\.\s+/).filter(Boolean).map(s => s.trim().replace(/\.$/, ""));
+  }
+  return text.split(". ").filter(Boolean).map(s => s.trim().replace(/\.$/, ""));
+}
+
+Object.assign(window, { ExecutiveView, parseRec });
+
+
+/* ==== next module ==== */
+
+// Correlated Findings page
+const FindingsPage = ({ onOpenFinding }) => {
+  const d = window.CFData;
+  const [sevFilter, setSevFilter] = useState({ CRITICAL: true, HIGH: true, MEDIUM: true, LOW: true });
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [expanded, setExpanded] = useState(new Set([d.findings[0]?.rule_id]));
+
+  const filtered = d.findings.filter(f => sevFilter[f.risk_label] && (statusFilter === "all" || f.status === statusFilter));
+
+  const toggle = (id) => {
+    const next = new Set(expanded);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setExpanded(next);
+  };
+
+  return (
+    <div className="page" data-screen-label="Correlated Findings">
+      <div className="page-head">
+        <div>
+          <h1 className="page-title">Correlated Intelligence Findings</h1>
+          <div className="page-sub">Multi-source signal correlation with MITRE ATT&amp;CK mapping, status tracking, and PDF export.</div>
+        </div>
+        <div className="page-actions">
+          <button className="btn"><Icon name="download" size={14} />Export PDF report</button>
+          <button className="btn btn-primary"><Icon name="external" size={14} />Send to Slack</button>
+        </div>
+      </div>
+
+      {/* Score chart */}
+      <Card title="Risk Score by Finding" sub="Open and acknowledged findings · click any to expand"
+        action={<div className="row-gap">
+          {["CRITICAL", "HIGH", "MEDIUM", "LOW"].map(s => (
+            <button key={s}
+              className={"chip" + (sevFilter[s] ? " active" : "")}
+              style={{ cursor: "pointer" }}
+              onClick={() => setSevFilter({ ...sevFilter, [s]: !sevFilter[s] })}>
+              <span className="sw" style={{ width: 7, height: 7, borderRadius: 50, background: `var(--${sevClass(s)})` }} />
+              {s.toLowerCase()}
+            </button>
+          ))}
+        </div>}>
+        <FindingScoreBars findings={filtered} />
+      </Card>
+
+      <div style={{ height: 16 }} />
+
+      {/* Status filter row */}
+      <div className="row-gap" style={{ marginBottom: 14 }}>
+        <Icon name="filter" size={14} style={{ color: "var(--text-3)" }} />
+        <span style={{ fontSize: 12, color: "var(--text-3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: ".06em", marginRight: 6 }}>Status</span>
+        {["all", "open", "acknowledged", "resolved", "false_positive"].map(s => (
+          <button key={s} className={"chip" + (statusFilter === s ? " active" : "")} style={{ cursor: "pointer" }} onClick={() => setStatusFilter(s)}>
+            {s === "all" ? "All" : s === "false_positive" ? "False positive" : s.charAt(0).toUpperCase() + s.slice(1)}
+          </button>
+        ))}
+        <span className="spacer" />
+        <span style={{ fontSize: 12, color: "var(--text-3)" }}>{filtered.length} of {d.findings.length} findings</span>
+      </div>
+
+      {/* Findings list */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {filtered.map(f => {
+          const open = expanded.has(f.rule_id);
+          return (
+            <div key={f.rule_id} className="card">
+              <div className="card-head" style={{ cursor: "pointer" }} onClick={() => toggle(f.rule_id)}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1 }}>
+                  <div className={"list-rail " + sevClass(f.risk_label)} style={{ height: 32 }} />
+                  <div>
+                    <div className="row-gap" style={{ marginBottom: 4 }}>
+                      <span className="mono" style={{ fontSize: 11.5, color: "var(--text-4)" }}>{f.rule_id}</span>
+                      <Badge severity={f.risk_label} size="sm" />
+                      {f.kev_confirmed_cves && f.kev_confirmed_cves.length > 0 && <KevBadge />}
+                      <span className={"status-pill " + (f.status === "open" ? "open" : f.status === "acknowledged" ? "ack" : f.status === "resolved" ? "resolved" : "fp")}>
+                        <span className="ind" />{f.status.replace("_", " ")}
+                      </span>
+                    </div>
+                    <h3 className="card-title" style={{ fontSize: 15 }}>{f.rule_name}</h3>
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{ textAlign: "right" }}>
+                    <div className="mono" style={{ fontSize: 18, fontWeight: 700 }}>{f.risk_score}<span style={{ color: "var(--text-4)", fontWeight: 400 }}>/100</span></div>
+                    <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 2 }}>{f.ageDays}d ago</div>
+                  </div>
+                  <Icon name={open ? "chevronDown" : "chevron"} size={16} style={{ color: "var(--text-3)" }} />
+                </div>
+              </div>
+              {open && (
+                <div className="card-body" style={{ paddingTop: 18 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24 }}>
+                    <div>
+                      <div className="section-h">Description</div>
+                      <p style={{ margin: "0 0 14px", color: "var(--text-2)", lineHeight: 1.6 }}>{f.description}</p>
+
+                      {f.mitre_technique && (
+                        <>
+                          <div className="section-h">MITRE ATT&amp;CK</div>
+                          <div className="row-gap" style={{ marginBottom: 16 }}>
+                            <span className="mitre-tag"><Icon name="map" size={11} />{f.mitre_tactic}</span>
+                            <span className="mitre-tag">{f.mitre_technique}</span>
+                          </div>
+                        </>
+                      )}
+
+                      {[
+                        { field: "matched_exposure", label: "Exposure / breach signals", icon: "eye" },
+                        { field: "matched_cves", label: "Related CVEs", icon: "bug" },
+                        { field: "kev_confirmed_cves", label: "KEV-confirmed", icon: "flame" },
+                        { field: "affected_emails", label: "Affected email addresses", icon: "file" },
+                      ].map(({ field, label, icon }) => {
+                        const items = f[field] || [];
+                        if (!items.length) return null;
+                        return (
+                          <div key={field} style={{ marginBottom: 14 }}>
+                            <div className="section-h" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <Icon name={icon} size={11} /> {label} <span style={{ color: "var(--text-4)" }}>({items.length})</span>
+                            </div>
+                            <div className="evidence-list">
+                              {items.slice(0, 5).map((e, i) => <div key={i} className="evidence-item">{e}</div>)}
+                              {items.length > 5 && <div style={{ fontSize: 12, color: "var(--text-3)", padding: "4px 11px" }}>+ {items.length - 5} more</div>}
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      <div className="section-h">Recommended mitigation</div>
+                      <ol style={{ margin: 0, paddingLeft: 18, color: "var(--text-2)", lineHeight: 1.65, fontSize: 13.5 }}>
+                        {parseRec(f.recommendation).map((s, i) => <li key={i} style={{ marginBottom: 5 }}>{s}</li>)}
+                      </ol>
+                    </div>
+
+                    <div>
+                      <div className="section-h">Score breakdown</div>
+                      <div className="score-rows">
+                        {f.score_breakdown.map((row, i) => (
+                          <div className="score-row" key={i}>
+                            <span className="lbl">{row.label}</span>
+                            <span className="val">{row.value}</span>
+                          </div>
+                        ))}
+                        <div className="score-row total">
+                          <span className="lbl">Final score</span>
+                          <span className="val">{f.risk_score} / 100</span>
+                        </div>
+                      </div>
+
+                      <div className="section-h" style={{ marginTop: 18 }}>Affected assets</div>
+                      <div className="evidence-list">
+                        {f.affected_assets.map((a, i) => <div key={i} className="evidence-item">{a}</div>)}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 6 }}>
+                        {{1: "Tier 1 — Crown Jewel (×1.5 multiplier)", 2: "Tier 2 — Core (×1.2 multiplier)", 3: "Tier 3 — Standard (×1.0)"}[f.asset_tier]}
+                      </div>
+
+                      <div className="divider" />
+                      <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }} onClick={(e) => { e.stopPropagation(); onOpenFinding(f.rule_id); }}>
+                        Open full detail page <Icon name="external" size={13} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+window.FindingsPage = FindingsPage;
+
+
+/* ==== next module ==== */
+
+// Finding Detail page
+const FindingDetail = ({ ruleId, onBack }) => {
+  const d = window.CFData;
+  const f = d.findings.find(x => x.rule_id === ruleId);
+  if (!f) {
+    return (
+      <div className="page">
+        <button className="btn" onClick={onBack}><Icon name="chevron" size={13} style={{ transform: "rotate(180deg)" }} /> Back</button>
+        <div style={{ padding: 40, textAlign: "center", color: "var(--text-3)" }}>Finding {ruleId} not found.</div>
+      </div>
+    );
+  }
+
+  const docs = {
+    "CORR-003": {
+      purpose: "Surfaces breach or exposure signals containing VPN-related credentials. This is treated as the highest-impact initial-access vector because a single valid credential bypasses every perimeter control.",
+      detection_logic: "The correlator flattens all breach/exposure signals from configured sources, filters for items tagged as `vpn` or `remote_access`, and joins them against the asset inventory's VPN-tagged hosts. A match fires this rule with confidence HIGH; the rule's base weight is 25.",
+      why_it_matters: "VPN credentials yield trusted network access. Once inside, an attacker bypasses NAT, perimeter firewalls, and many DLP/EDR controls. Real-world ransomware operators consistently rank exposed VPN access as the #1 initial-access vector.",
+      false_positives: "Stale exposure signals from a deprecated VPN appliance can persist after migration. Re-run the asset reconciliation step monthly to clear.",
+      data_sources: ["hibp", "kev", "assets"],
+    },
+    "CORR-008": {
+      purpose: "Compound risk detector. Fires when the same organization or asset accumulates multiple independent breach/exposure signals across different sources within a short window.",
+      detection_logic: "Counts independent (source, signal_type) tuples per organization. ≥4 distinct signals within 14 days triggers the rule. Confidence is set MEDIUM unless any constituent signal is itself HIGH-confidence.",
+      why_it_matters: "Multiple independent signals against the same org indicates sustained attacker interest or persistent exposure. Compound risk is more dangerous than the sum of its parts.",
+      data_sources: ["hibp", "rss", "shodan"],
+    },
+    "CORR-005": {
+      purpose: "Identifies corporate email addresses appearing in third-party breach data. These addresses are the launch pad for spear-phishing, credential stuffing, and social engineering campaigns.",
+      detection_logic: "Filters HIBP/breach results for items where `data_classes` contains email addresses, then matches each address's domain against configured corporate domains.",
+      why_it_matters: "Targeted phishing against a known list of corporate identities has a dramatically higher success rate than untargeted campaigns. Mitigation focuses on user awareness and MFA enforcement.",
+      data_sources: ["hibp", "assets"],
+    },
+  }[ruleId] || {};
+
+  return (
+    <div className="page" data-screen-label="Finding Detail">
+      <button className="btn btn-ghost" onClick={onBack} style={{ marginBottom: 12 }}>
+        <Icon name="chevron" size={13} style={{ transform: "rotate(180deg)" }} /> Back to Correlated Findings
+      </button>
+
+      <div className="detail-hero">
+        <div className="detail-hero-id">FINDING · {f.rule_id}</div>
+        <h1 className="detail-hero-title">{f.rule_name}</h1>
+        <div className="row-gap">
+          <Badge severity={f.risk_label} solid>{f.risk_label}</Badge>
+          <span style={{ background: "rgba(255,255,255,0.1)", color: "#fff", padding: "3px 10px", borderRadius: 999, fontSize: 12, fontWeight: 600 }}>Risk Score · {f.risk_score}/100</span>
+          {f.kev_confirmed_cves && f.kev_confirmed_cves.length > 0 && (
+            <span style={{ background: "rgba(123,47,190,0.25)", color: "#e8d4ff", padding: "3px 10px", borderRadius: 999, fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+              <Icon name="flame" size={11} /> Actively exploited (KEV)
+            </span>
+          )}
+          <span style={{ marginLeft: "auto", fontSize: 12, color: "rgba(255,255,255,0.7)" }}>Detected · {f.detectedAt}</span>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <Card title="🎯 Objective">
+            <p style={{ margin: 0, lineHeight: 1.65, color: "var(--text-2)", fontSize: 14 }}>{docs.purpose || f.description}</p>
+          </Card>
+
+          {f.mitre_technique && (
+            <Card title="🗺️ MITRE ATT&CK Mapping">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <div>
+                  <div className="section-h">Tactic</div>
+                  <span className="mitre-tag" style={{ fontSize: 13, padding: "5px 12px" }}>{f.mitre_tactic}</span>
+                </div>
+                <div>
+                  <div className="section-h">Technique</div>
+                  <span className="mitre-tag" style={{ fontSize: 13, padding: "5px 12px" }}>{f.mitre_technique}</span>
+                </div>
+              </div>
+              <div style={{ marginTop: 14, fontSize: 12, color: "var(--text-3)" }}>
+                Reference: <a href="https://attack.mitre.org/" target="_blank" style={{ color: "var(--accent-dark)" }}>attack.mitre.org</a>
+              </div>
+            </Card>
+          )}
+
+          <Card title="🧾 Evidence Summary" sub="Every signal contributing to this finding">
+            {[
+              { field: "matched_exposure", label: "Exposure / breach signals", icon: "eye" },
+              { field: "matched_cves", label: "Related CVEs", icon: "bug" },
+              { field: "kev_confirmed_cves", label: "Actively exploited (KEV)", icon: "flame" },
+              { field: "affected_emails", label: "Affected email addresses", icon: "file" },
+            ].map(({ field, label, icon }) => {
+              const items = f[field] || [];
+              if (!items.length) return null;
+              return (
+                <div key={field} style={{ marginBottom: 14 }}>
+                  <div className="section-h" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <Icon name={icon} size={11} /> {label} <span style={{ color: "var(--text-4)" }}>({items.length})</span>
+                  </div>
+                  <div className="evidence-list">
+                    {items.map((e, i) => <div key={i} className="evidence-item">{e}</div>)}
+                  </div>
+                </div>
+              );
+            })}
+          </Card>
+
+          <Card title="⚙️ Detection Methodology" sub={`Source: analysis/correlator.py → rule ${f.rule_id}`}>
+            <p style={{ margin: 0, lineHeight: 1.65, color: "var(--text-2)" }}>{docs.detection_logic || "Detection logic documentation pending."}</p>
+          </Card>
+
+          {docs.why_it_matters && (
+            <Card title="💡 Why This Matters">
+              <p style={{ margin: 0, lineHeight: 1.65, color: "var(--text-2)" }}>{docs.why_it_matters}</p>
+            </Card>
+          )}
+
+          <Card title="🛠️ Recommended Mitigation">
+            <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.7, color: "var(--text-2)" }}>
+              {parseRec(f.recommendation).map((s, i) => (
+                <li key={i} style={{ marginBottom: 6 }}>{s}</li>
+              ))}
+            </ol>
+            <div className="divider" />
+            <div className="row-gap">
+              <button className="btn btn-accent"><Icon name="check" size={13}/>Mark resolved</button>
+              <button className="btn"><Icon name="bell" size={13}/>Acknowledge</button>
+              <button className="btn btn-ghost">Mark as false positive</button>
+            </div>
+          </Card>
+
+          {docs.false_positives && (
+            <Card title="⚠️ Known False-Positive Conditions">
+              <p style={{ margin: 0, lineHeight: 1.65, color: "var(--text-2)" }}>{docs.false_positives}</p>
+            </Card>
+          )}
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <Card title="📊 Score Breakdown" sub="Every point documented">
+            <div className="score-rows">
+              {f.score_breakdown.map((row, i) => (
+                <div className="score-row" key={i}>
+                  <span className="lbl">{row.label}</span>
+                  <span className="val">{row.value}</span>
+                </div>
+              ))}
+              <div className="score-row total">
+                <span className="lbl">Final score</span>
+                <span className="val">{f.risk_score} / 100</span>
+              </div>
+            </div>
+            <div style={{ marginTop: 14, fontSize: 11.5, color: "var(--text-3)", lineHeight: 1.5 }}>
+              <strong>Confidence:</strong> {f.confidence}<br/>
+              Driven by source reliability and the number of independent signals supporting the correlation.
+            </div>
+          </Card>
+
+          <Card title="🖥️ Affected Assets">
+            <div className="evidence-list">
+              {f.affected_assets.map((a, i) => <div key={i} className="evidence-item">{a}</div>)}
+            </div>
+            <div style={{ marginTop: 10, fontSize: 11.5, color: "var(--text-3)" }}>
+              {{1: "Tier 1 — Crown Jewel (×1.5)", 2: "Tier 2 — Core Infra (×1.2)", 3: "Tier 3 — Standard (×1.0)"}[f.asset_tier]}
+            </div>
+          </Card>
+
+          {docs.data_sources && docs.data_sources.length > 0 && (
+            <Card title="📡 Data Provenance" sub="Every signal traceable to its source">
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {docs.data_sources.map(k => {
+                  const src = d.dataSources.find(s => s.key === k);
+                  if (!src) return null;
+                  return (
+                    <div key={k} style={{ padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface-2)" }}>
+                      <div style={{ fontWeight: 600, fontSize: 13 }}>{src.name}</div>
+                      <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 3 }}>
+                        {src.type} · {src.license} · refresh {src.refresh}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          )}
+
+          <Card title="📋 Finding Status">
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {["open", "acknowledged", "resolved", "false_positive"].map(s => (
+                <label key={s} style={{ display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 7, cursor: "pointer", background: f.status === s ? "var(--accent-soft)" : "var(--surface)" }}>
+                  <input type="radio" name="status" defaultChecked={f.status === s} />
+                  <span className={"status-pill " + (s === "open" ? "open" : s === "acknowledged" ? "ack" : s === "resolved" ? "resolved" : "fp")}>
+                    <span className="ind" />{s.replace("_", " ")}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+window.FindingDetail = FindingDetail;
+
+
+/* ==== next module ==== */
+
+// Threat Feed page
+const ThreatFeed = () => {
+  const d = window.CFData;
+  const [tab, setTab] = useState("cve");
+  const [search, setSearch] = useState("");
+  const [kevOnly, setKevOnly] = useState(false);
+
+  const filteredCves = d.cves.filter(c =>
+    (!search || c.id.toLowerCase().includes(search.toLowerCase()) || c.description.toLowerCase().includes(search.toLowerCase()))
+    && (!kevOnly || c.kev)
+  );
+
+  return (
+    <div className="page" data-screen-label="Threat Feed">
+      <div className="page-head">
+        <div>
+          <h1 className="page-title">Threat Intelligence Feed</h1>
+          <div className="page-sub">Curated CVEs, CISA KEV catalog entries, and security journalism · refreshed every 60 minutes.</div>
+        </div>
+        <div className="page-actions">
+          <button className="btn"><Icon name="refresh" size={14}/>Refresh feeds</button>
+        </div>
+      </div>
+
+      <div className="tabs">
+        <button className={"tab" + (tab === "cve" ? " active" : "")} onClick={() => setTab("cve")}>
+          <Icon name="bug" size={13} /> Recent CVEs <span className="tab-count">{d.cves.length}</span>
+        </button>
+        <button className={"tab" + (tab === "kev" ? " active" : "")} onClick={() => setTab("kev")}>
+          <Icon name="flame" size={13} /> CISA KEV <span className="tab-count">{d.kev.length}</span>
+        </button>
+        <button className={"tab" + (tab === "news" ? " active" : "")} onClick={() => setTab("news")}>
+          <Icon name="feed" size={13} /> Security News <span className="tab-count">{d.news.length}</span>
+        </button>
+      </div>
+
+      {tab === "cve" && (
+        <>
+          <div className="row-gap" style={{ marginBottom: 14 }}>
+            <input className="search" placeholder="Search CVEs by ID or description…" value={search} onChange={e => setSearch(e.target.value)} style={{ width: 320 }} />
+            <button className={"chip" + (kevOnly ? " active" : "")} onClick={() => setKevOnly(!kevOnly)} style={{ cursor: "pointer" }}>
+              <Icon name="flame" size={11} /> KEV only
+            </button>
+            <span className="spacer" />
+            <span style={{ fontSize: 12, color: "var(--text-3)" }}>{filteredCves.length} of {d.cves.length}</span>
+          </div>
+          <Card padded={false}>
+            <table className="data">
+              <thead>
+                <tr>
+                  <th>CVE</th>
+                  <th>Severity</th>
+                  <th>CVSS</th>
+                  <th>Vendor · Product</th>
+                  <th>Description</th>
+                  <th>Published</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCves.map(c => (
+                  <tr key={c.id}>
+                    <td><span className="mono" style={{ fontWeight: 600 }}>{c.id}</span>{c.kev && <span style={{ marginLeft: 6 }}><Icon name="flame" size={11} style={{ color: "var(--kev)" }} /></span>}</td>
+                    <td><Badge severity={c.severity} size="sm" /></td>
+                    <td><span className="mono" style={{ fontWeight: 600 }}>{c.score.toFixed(1)}</span></td>
+                    <td style={{ color: "var(--text-2)" }}>{c.vendor} · {c.product}</td>
+                    <td style={{ maxWidth: 380, color: "var(--text-2)" }}>{c.description}</td>
+                    <td style={{ whiteSpace: "nowrap", color: "var(--text-3)" }}>{c.published}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </>
+      )}
+
+      {tab === "kev" && (
+        <>
+          <div className="alert info" style={{ marginBottom: 14 }}>
+            <Icon name="info" size={15} style={{ marginTop: 1 }} />
+            <div><span className="alert-strong">CISA Known Exploited Vulnerabilities</span> — {d.kev.length} vulnerabilities confirmed as actively exploited. Federal agencies must remediate these on deadline.</div>
+          </div>
+          <Card padded={false}>
+            <table className="data">
+              <thead>
+                <tr>
+                  <th>CVE</th>
+                  <th>Vendor</th>
+                  <th>Product</th>
+                  <th>Vulnerability</th>
+                  <th>Date added</th>
+                  <th>Due date</th>
+                  <th>Ransomware</th>
+                </tr>
+              </thead>
+              <tbody>
+                {d.kev.map(v => (
+                  <tr key={v.cveID}>
+                    <td><span className="mono" style={{ fontWeight: 600 }}>{v.cveID}</span></td>
+                    <td>{v.vendorProject}</td>
+                    <td style={{ color: "var(--text-2)" }}>{v.product}</td>
+                    <td style={{ color: "var(--text-2)" }}>{v.vulnerabilityName}</td>
+                    <td className="mono" style={{ color: "var(--text-3)", fontSize: 12 }}>{v.dateAdded}</td>
+                    <td className="mono" style={{ color: "var(--text-3)", fontSize: 12 }}>{v.dueDate}</td>
+                    <td>{v.ransomware === "Known" ? <Badge severity="HIGH" size="sm">Known</Badge> : <span style={{ color: "var(--text-4)", fontSize: 12 }}>Unknown</span>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </>
+      )}
+
+      {tab === "news" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {d.news.map((n, i) => (
+            <Card key={i}>
+              <div className="row-gap" style={{ marginBottom: 6 }}>
+                {n.priority && <Badge severity="HIGH" size="sm">Priority</Badge>}
+                <span style={{ fontSize: 12, color: "var(--text-3)", fontWeight: 600 }}>{n.source}</span>
+                <span style={{ fontSize: 12, color: "var(--text-4)" }}>· {n.published}</span>
+              </div>
+              <h3 style={{ margin: "0 0 8px", fontSize: 16, letterSpacing: "-0.01em" }}>{n.title}</h3>
+              <p style={{ margin: 0, color: "var(--text-2)", lineHeight: 1.55, fontSize: 13.5 }}>{n.summary}</p>
+              <div className="row-gap" style={{ marginTop: 10 }}>
+                {n.keywords.map(k => <span key={k} className="chip">{k}</span>)}
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+window.ThreatFeed = ThreatFeed;
+
+
+/* ==== next module ==== */
+
+// Exposure & Breach page
+const ExposurePage = () => {
+  const d = window.CFData;
+  const [tab, setTab] = useState("ports");
+
+  return (
+    <div className="page" data-screen-label="Exposure and Breach">
+      <div className="page-head">
+        <div>
+          <h1 className="page-title">Exposure &amp; Attack Surface</h1>
+          <div className="page-sub">Authorized scan results, breach signals, and IP reputation enrichment. <span className="mono">Lab-scoped only.</span></div>
+        </div>
+      </div>
+
+      <div className="alert warn" style={{ marginBottom: 14 }}>
+        <Icon name="info" size={15} style={{ marginTop: 1 }} />
+        <div><span className="alert-strong">Ethics note.</span> All TCP scans target localhost or authorized lab Docker containers. Breach signals are HIBP API data or clearly-labeled synthetic.</div>
+      </div>
+
+      <div className="tabs">
+        <button className={"tab" + (tab === "ports" ? " active" : "")} onClick={() => setTab("ports")}>
+          <Icon name="network" size={13} /> Open Ports <span className="tab-count">{d.ports.length} hosts</span>
+        </button>
+        <button className={"tab" + (tab === "breach" ? " active" : "")} onClick={() => setTab("breach")}>
+          <Icon name="file" size={13} /> Breach Signals <span className="tab-count">{d.breaches.length}</span>
+        </button>
+        <button className={"tab" + (tab === "ip" ? " active" : "")} onClick={() => setTab("ip")}>
+          <Icon name="radar" size={13} /> IP Reputation <span className="tab-count">{d.ipRep.length}</span>
+        </button>
+      </div>
+
+      {tab === "ports" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {d.ports.map(h => (
+            <Card key={h.hostname} title={
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <Icon name="server" size={15} style={{ color: "var(--text-3)" }} /> {h.hostname}
+              </span>
+            } sub={<span><span className="mono">{h.ip}</span> · {h.openCount} open port(s) · scanned {h.scannedAt}</span>} padded={false}>
+              <table className="data">
+                <thead><tr><th>Port</th><th>Service</th><th>Risk</th><th>Note</th></tr></thead>
+                <tbody>
+                  {h.ports.map(p => (
+                    <tr key={p.port}>
+                      <td className="mono" style={{ fontWeight: 600 }}>{p.port}</td>
+                      <td className="mono" style={{ color: "var(--text-2)" }}>{p.service}</td>
+                      <td><Badge severity={p.risk} size="sm" /></td>
+                      <td style={{ color: "var(--text-2)" }}>{p.note}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {tab === "breach" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {d.breaches.map(b => (
+            <Card key={b.name}>
+              <div className="row-gap" style={{ marginBottom: 8 }}>
+                <Badge severity={b.severity} size="sm" />
+                {b.synthetic && <span className="chip">SYNTHETIC</span>}
+                <span style={{ fontSize: 12, color: "var(--text-3)" }}>· {b.date}</span>
+                <span className="spacer" />
+                <span className="mono" style={{ fontWeight: 600 }}>{b.pwnCount.toLocaleString()} accounts</span>
+              </div>
+              <h3 style={{ margin: "0 0 6px", fontSize: 16 }}>{b.name}</h3>
+              <div style={{ fontSize: 12.5, color: "var(--text-3)", marginBottom: 8 }}>Domain: <span className="mono">{b.domain}</span></div>
+              <p style={{ margin: 0, color: "var(--text-2)", lineHeight: 1.55, fontSize: 13.5 }}>{b.description}</p>
+              <div style={{ marginTop: 10 }}>
+                <div className="section-h" style={{ marginBottom: 6 }}>Data exposed</div>
+                <div className="row-gap">
+                  {b.classes.map(c => <span key={c} className="chip">{c}</span>)}
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {tab === "ip" && (
+        <Card padded={false}>
+          <table className="data">
+            <thead>
+              <tr><th>IP Address</th><th>Classification</th><th>Open ports</th><th>CVEs</th><th>Note</th></tr>
+            </thead>
+            <tbody>
+              {d.ipRep.map(r => {
+                const cls = r.classification;
+                const color = cls === "MALICIOUS" ? "crit" : cls === "BENIGN" ? "low" : "unknown";
+                return (
+                  <tr key={r.ip}>
+                    <td className="mono" style={{ fontWeight: 600 }}>{r.ip}</td>
+                    <td><Badge severity={color === "crit" ? "CRITICAL" : color === "low" ? "LOW" : ""} size="sm">{cls}</Badge></td>
+                    <td className="mono" style={{ color: "var(--text-2)" }}>{r.ports.join(", ") || "—"}</td>
+                    <td className="mono" style={{ color: "var(--text-2)" }}>{r.vulns.join(", ") || "—"}</td>
+                    <td style={{ color: "var(--text-2)" }}>{r.note}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+window.ExposurePage = ExposurePage;
+
+
+/* ==== next module ==== */
+
+// AI Briefing page
+const BriefingPage = () => {
+  const d = window.CFData;
+  const { briefing } = d;
+  const [generating, setGenerating] = useState(false);
+  const [tab, setTab] = useState("brief");
+
+  const onGenerate = () => {
+    setGenerating(true);
+    setTimeout(() => setGenerating(false), 2200);
+  };
+
+  return (
+    <div className="page" data-screen-label="AI Briefing">
+      <div className="page-head">
+        <div>
+          <h1 className="page-title">Daily Security Briefing</h1>
+          <div className="page-sub">Structured threat summary generated from current pipeline data — grounded in live findings, never hallucinated.</div>
+        </div>
+        <div className="page-actions">
+          <button className="btn"><Icon name="download" size={14}/>Download .md</button>
+          <button className="btn btn-accent" onClick={onGenerate} disabled={generating}>
+            <Icon name="sparkles" size={14}/>{generating ? "Generating…" : "Regenerate briefing"}
+          </button>
+        </div>
+      </div>
+
+      {/* Status row */}
+      <div className="grid-3" style={{ marginBottom: 16 }}>
+        <Card>
+          <div className="section-h">Backend</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ width: 8, height: 8, borderRadius: 50, background: "var(--low)", boxShadow: "0 0 0 4px rgba(22,163,74,0.15)" }} />
+            <strong style={{ fontSize: 14 }}>{briefing.backend}</strong>
+          </div>
+          <div style={{ fontSize: 12, color: "var(--text-3)", marginTop: 6 }}>Ollama fallback available · 2 alt-models configured</div>
+        </Card>
+        <Card>
+          <div className="section-h">Last generated</div>
+          <div style={{ fontWeight: 700, fontSize: 14 }}>{briefing.generatedAt}</div>
+          <div style={{ fontSize: 12, color: "var(--text-3)", marginTop: 6 }}>Pipeline run: {d.org.lastRun}</div>
+        </Card>
+        <Card>
+          <div className="section-h">Assessed risk</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Badge severity="HIGH" solid>{briefing.overallRisk}</Badge>
+            <span style={{ fontSize: 12, color: "var(--text-3)" }}>from latest run</span>
+          </div>
+          <div style={{ fontSize: 12, color: "var(--text-3)", marginTop: 6 }}>Generated from current pipeline data</div>
+        </Card>
+      </div>
+
+      <div className="tabs">
+        <button className={"tab" + (tab === "brief" ? " active" : "")} onClick={() => setTab("brief")}><Icon name="sparkles" size={13}/>Briefing</button>
+        <button className={"tab" + (tab === "prompt" ? " active" : "")} onClick={() => setTab("prompt")}><Icon name="file" size={13}/>Export prompt</button>
+        <button className={"tab" + (tab === "history" ? " active" : "")} onClick={() => setTab("history")}><Icon name="list" size={13}/>Past briefings</button>
+      </div>
+
+      {tab === "brief" && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 16 }}>
+          <Card>
+            <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+              {briefing.sections.map((s, i) => (
+                <div key={i}>
+                  <div className="row-gap" style={{ marginBottom: 6 }}>
+                    <span style={{ width: 24, height: 24, borderRadius: 6, background: "var(--accent-soft)", color: "var(--accent-dark)", display: "grid", placeItems: "center", fontSize: 12, fontWeight: 700 }}>{i + 1}</span>
+                    <h3 style={{ margin: 0, fontSize: 15, letterSpacing: "-0.01em" }}>{s.title}</h3>
+                  </div>
+                  <p style={{ margin: 0, color: "var(--text-2)", lineHeight: 1.65, fontSize: 14, paddingLeft: 32 }}>{s.body}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <Card title="Context used" sub="Real pipeline data only">
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 13 }}>
+                {[
+                  { label: "Findings", value: d.findings.length, icon: "link" },
+                  { label: "Recent CVEs", value: d.cves.length, icon: "bug" },
+                  { label: "KEV entries", value: d.kev.length, icon: "flame" },
+                  { label: "Open ports", value: d.ports.reduce((s, h) => s + h.openCount, 0), icon: "network" },
+                  { label: "News items", value: d.news.length, icon: "feed" },
+                  { label: "Breach signals", value: d.breaches.length, icon: "file" },
+                ].map(r => (
+                  <div key={r.label} style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                    <span style={{ width: 26, height: 26, borderRadius: 6, background: "var(--surface-2)", border: "1px solid var(--border)", display: "grid", placeItems: "center", color: "var(--text-3)" }}>
+                      <Icon name={r.icon} size={12} />
+                    </span>
+                    <span style={{ flex: 1, color: "var(--text-2)" }}>{r.label}</span>
+                    <span className="mono" style={{ fontWeight: 700 }}>{r.value}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card title="Distribution" sub={<span>Roadmap <span className="illus-tag">not wired in demo</span></span>}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {[
+                  { label: "#sec-ops (Slack)", desc: "Posted at 09:00 weekdays" },
+                  { label: "ciso@northstar (email)", desc: "Bundled with PDF report" },
+                  { label: "ticket queue", desc: "Auto-creates Jira issues for criticals" },
+                ].map(c => (
+                  <div key={c.label} style={{ padding: "9px 11px", border: "1px solid var(--border)", borderRadius: 7, background: "var(--surface-2)" }}>
+                    <div style={{ fontWeight: 600, fontSize: 13 }}>{c.label}</div>
+                    <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 2 }}>{c.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {tab === "prompt" && (
+        <Card title="Export prompt" sub="Paste into Claude.ai / ChatGPT / Gemini to generate the briefing manually">
+          <div style={{ background: "var(--navy-900)", color: "#c5cbdb", padding: 18, borderRadius: 8, fontFamily: "'IBM Plex Mono', monospace", fontSize: 12.5, lineHeight: 1.6, whiteSpace: "pre-wrap", maxHeight: 360, overflow: "auto" }}>
+{`You are a senior CTI analyst. Given the live pipeline data below, write a
+structured daily briefing with these sections:
+
+  1. Overall Risk Level
+  2. What Requires Attention
+  3. Active Exploitation Activity
+  4. Exposed Services
+  5. Recommended Actions
+
+Findings:
+${JSON.stringify(d.findings.map(f => ({ id: f.rule_id, name: f.rule_name, sev: f.risk_label, score: f.risk_score })), null, 2)}
+
+KEV-confirmed CVEs in scope: ${d.findings.flatMap(f => f.kev_confirmed_cves || []).join(", ") || "(none)"}
+
+Keep total length under 400 words.`}
+          </div>
+          <div className="row-gap" style={{ marginTop: 12 }}>
+            <button className="btn btn-primary">Copy to clipboard</button>
+            <button className="btn"><Icon name="download" size={13}/>Download .txt</button>
+          </div>
+        </Card>
+      )}
+
+      {tab === "history" && (
+        <Card padded={false}>
+          <div className="alert info" style={{ margin: 14 }}>
+            <Icon name="info" size={15} style={{ marginTop: 1 }} />
+            <div><span className="alert-strong">Illustrative.</span> Briefing history accumulates as the pipeline runs over time. The rows below are sample entries showing the format.</div>
+          </div>
+          <table className="data">
+            <thead><tr><th>Generated</th><th>Backend</th><th>Risk</th><th>Top finding</th><th></th></tr></thead>
+            <tbody>
+              {[
+                ["2026-05-19 16:48", "Anthropic", "HIGH", "VPN Credential Exposure"],
+                ["2026-05-18 09:02", "Anthropic", "HIGH", "VPN Credential Exposure"],
+                ["2026-05-17 09:01", "Ollama", "MEDIUM", "Multi-source breach signals"],
+                ["2026-05-16 09:00", "Ollama", "MEDIUM", "Multi-source breach signals"],
+                ["2026-05-15 09:00", "Anthropic", "MEDIUM", "Corporate Email Exposure"],
+              ].map((row, i) => (
+                <tr key={i}>
+                  <td className="mono">{row[0]}</td>
+                  <td>{row[1]}</td>
+                  <td><Badge severity={row[2]} size="sm" /></td>
+                  <td>{row[3]}</td>
+                  <td style={{ textAlign: "right" }}><button className="btn btn-sm btn-ghost"><Icon name="download" size={12}/>Download</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+window.BriefingPage = BriefingPage;
+
+
+/* ==== next module ==== */
+
+// Methodology + Architecture pages
+const MethodologyPage = () => {
+  const d = window.CFData;
+  return (
+    <div className="page" data-screen-label="Methodology">
+      <div className="page-head">
+        <div>
+          <h1 className="page-title">Methodology &amp; Transparency</h1>
+          <div className="page-sub">Every score, every signal, every data source — fully documented.</div>
+        </div>
+      </div>
+
+      <Card title="About This Demo" sub="What is real vs. illustrative">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+          <div>
+            <div className="section-h" style={{ color: "var(--low)" }}>Real pipeline output</div>
+            <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7, color: "var(--text-2)", fontSize: 13 }}>
+              <li>Correlated findings, risk scores, and full score breakdowns</li>
+              <li>CVEs from the NIST NVD API and entries from the CISA KEV catalog</li>
+              <li>Security news from public RSS feeds</li>
+              <li>TCP port scans of local lab Docker containers only</li>
+              <li>Correlation rules and data-source provenance</li>
+            </ul>
+          </div>
+          <div>
+            <div className="section-h" style={{ color: "var(--high)" }}>Illustrative / synthetic</div>
+            <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7, color: "var(--text-2)", fontSize: 13 }}>
+              <li><strong>30-day trend</strong> and <strong>peer benchmark</strong> — shaped to the current run; no external peer dataset</li>
+              <li><strong>MTTR</strong> and <strong>briefing history</strong> — sample values showing format</li>
+              <li><strong>Breach &amp; exposure records</strong> — clearly-labeled synthetic, generated locally</li>
+              <li><strong>Distribution channels</strong> (Slack / email / ticketing) — roadmap, not wired</li>
+            </ul>
+          </div>
+        </div>
+        <div className="divider" />
+        <div style={{ fontSize: 12.5, color: "var(--text-3)", lineHeight: 1.6 }}>
+          This is a static portfolio build. Data was generated from a real local pipeline run and frozen into the page.
+          All scanning is lab/localhost only — CyberFusion never targets external infrastructure.
+          Anything not produced by the pipeline is tagged <span className="illus-tag">illustrative</span> in the UI.
+        </div>
+      </Card>
+
+      <div style={{ height: 16 }} />
+
+      <div className="alert info" style={{ marginBottom: 16 }}>
+        <Icon name="info" size={15} style={{ marginTop: 1 }} />
+        <div>
+          <span className="alert-strong">Auditability is the design principle.</span> Every correlation rule is open code, every data source publicly verifiable, and every risk score carries its breakdown.
+        </div>
+      </div>
+
+      {/* Pipeline overview */}
+      <Card title="Pipeline Overview" sub="Collect → Normalize → Correlate → Score → Visualize">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
+          {[
+            { step: "Collect", desc: "5 public APIs + lab scan", icon: "feed" },
+            { step: "Normalize", desc: "Unified schema across sources", icon: "list" },
+            { step: "Correlate", desc: "8 detection rules", icon: "link" },
+            { step: "Score", desc: "Weighted explainable formula", icon: "flask" },
+            { step: "Visualize", desc: "Dashboard · PDF report · briefing", icon: "eye" },
+          ].map((s, i) => (
+            <div key={i} style={{ padding: "14px 14px", border: "1px solid var(--border)", borderRadius: 10, background: "var(--surface-2)", position: "relative" }}>
+              <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--accent-soft)", color: "var(--accent-dark)", display: "grid", placeItems: "center" }}>
+                <Icon name={s.icon} size={14} />
+              </div>
+              <div style={{ fontWeight: 700, fontSize: 13, marginTop: 10 }}>{i + 1}. {s.step}</div>
+              <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 3, lineHeight: 1.4 }}>{s.desc}</div>
+              {i < 4 && <div style={{ position: "absolute", right: -8, top: "50%", transform: "translateY(-50%)", color: "var(--text-4)", zIndex: 1 }}><Icon name="chevron" size={14}/></div>}
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <div style={{ height: 16 }} />
+
+      {/* Risk scoring */}
+      <Card title="Risk Scoring Formula" sub="Capped at 100. Mapped to label thresholds: ≥65 CRITICAL · ≥45 HIGH · ≥25 MEDIUM · &lt;25 LOW.">
+        <div style={{ background: "var(--navy-900)", color: "#c5cbdb", padding: 18, borderRadius: 8, fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, lineHeight: 1.65, marginBottom: 14 }}>
+          Score = (base_severity + confidence_bonus + rule_weight_bonus + evidence_bonus)<br/>
+          {"        "}× asset_criticality_multiplier&nbsp;&nbsp;[1.0 – 1.5×]<br/>
+          {"        "}+ kev_bonus&nbsp;&nbsp;[+20 if actively exploited]
+        </div>
+        <table className="data" style={{ border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden" }}>
+          <thead><tr><th>Factor</th><th>Range</th><th>Drives</th></tr></thead>
+          <tbody>
+            <tr><td>Base severity</td><td className="mono">5–40</td><td style={{ color: "var(--text-2)" }}>CRITICAL / HIGH / MEDIUM / LOW from the rule</td></tr>
+            <tr><td>Confidence bonus</td><td className="mono">0–10</td><td style={{ color: "var(--text-2)" }}>How certain the correlation rule is</td></tr>
+            <tr><td>Rule importance</td><td className="mono">0–25</td><td style={{ color: "var(--text-2)" }}>Some rules are inherently higher priority</td></tr>
+            <tr><td>Evidence count</td><td className="mono">0–12</td><td style={{ color: "var(--text-2)" }}>More corroborating signals → higher score</td></tr>
+            <tr><td>Asset multiplier</td><td className="mono">1.0–1.5×</td><td style={{ color: "var(--text-2)" }}>Tier-1 assets (VPN, DC) amplify the score</td></tr>
+            <tr><td>KEV bonus</td><td className="mono">+20</td><td style={{ color: "var(--text-2)" }}>Active CISA exploitation overrides everything</td></tr>
+          </tbody>
+        </table>
+      </Card>
+
+      <div style={{ height: 16 }} />
+
+      {/* Rule catalog */}
+      <Card title="Correlation Rule Catalog" sub={`${d.ruleCatalog.length} rules covering the highest-impact signal combinations`} padded={false}>
+        <table className="data">
+          <thead><tr><th>Rule</th><th>Name</th><th>Purpose</th><th>Weight</th></tr></thead>
+          <tbody>
+            {d.ruleCatalog.map(r => (
+              <tr key={r.id}>
+                <td><span className="mono" style={{ fontWeight: 600 }}>{r.id}</span></td>
+                <td style={{ fontWeight: 600 }}>{r.name}</td>
+                <td style={{ color: "var(--text-2)", maxWidth: 500 }}>{r.purpose}</td>
+                <td className="mono" style={{ fontWeight: 700 }}>{r.weight}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+
+      <div style={{ height: 16 }} />
+
+      {/* Data sources */}
+      <Card title="Data Sources" sub="All sources are public APIs or internal lab data" padded={false}>
+        <table className="data">
+          <thead><tr><th>Source</th><th>Type</th><th>License</th><th>Refresh</th><th>Description</th></tr></thead>
+          <tbody>
+            {d.dataSources.map(s => (
+              <tr key={s.key}>
+                <td style={{ fontWeight: 600 }}>{s.name}</td>
+                <td><span className="chip">{s.type}</span></td>
+                <td style={{ color: "var(--text-2)" }}>{s.license}</td>
+                <td className="mono" style={{ color: "var(--text-3)", fontSize: 12 }}>{s.refresh}</td>
+                <td style={{ color: "var(--text-2)", maxWidth: 380 }}>{s.description}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
+};
+
+const ArchitecturePage = () => {
+  const d = window.CFData;
+  return (
+    <div className="page" data-screen-label="Architecture">
+      <div className="page-head">
+        <div>
+          <h1 className="page-title">System Architecture</h1>
+          <div className="page-sub">How CyberFusion works — for demos, interviews, and portfolio reviewers.</div>
+        </div>
+      </div>
+
+      <Card title="Module Status" sub="Live health of each pipeline component" padded={false}>
+        <table className="data">
+          <thead><tr><th>Module</th><th>Purpose</th><th>Records</th><th>Last run</th><th>Status</th></tr></thead>
+          <tbody>
+            {d.pipelineModules.map(m => (
+              <tr key={m.name}>
+                <td className="mono" style={{ fontWeight: 600 }}>{m.name}.py</td>
+                <td style={{ color: "var(--text-2)" }}>{m.description}</td>
+                <td className="mono">{m.records}</td>
+                <td className="mono" style={{ color: "var(--text-3)", fontSize: 12 }}>{m.lastRun}</td>
+                <td>
+                  {m.health === "ok" && <span className="status-pill resolved"><span className="ind"/>Healthy</span>}
+                  {m.health === "synthetic" && <span className="status-pill ack"><span className="ind"/>Synthetic data</span>}
+                  {m.health === "error" && <span className="status-pill open"><span className="ind"/>Error</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+
+      <div style={{ height: 16 }} />
+
+      <div className="grid-2">
+        <Card title="Ethics &amp; Safety" sub="Hard boundaries baked into the pipeline">
+          <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7, color: "var(--text-2)" }}>
+            <li>All TCP scans target localhost + Docker lab only — never external infrastructure.</li>
+            <li>Breach data: HaveIBeenPwned public API per ToS, or clearly-labeled synthetic.</li>
+            <li>No credentials stored or displayed at any point.</li>
+            <li>AI briefing uses only your own local intelligence data as context.</li>
+          </ul>
+        </Card>
+        <Card title="How CyberFusion Differs" sub="Compared to opaque commercial platforms">
+          <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7, color: "var(--text-2)" }}>
+            <li>Every correlation rule is open Python — readable, modifiable, testable.</li>
+            <li>Every data source is publicly verifiable — no proprietary feeds, no vendor lock-in.</li>
+            <li>Every risk score has a published breakdown — no opaque ML models.</li>
+            <li>Every finding lists its data provenance — you see exactly where each signal came from.</li>
+          </ul>
+        </Card>
+      </div>
+
+      <div style={{ height: 16 }} />
+
+      <Card title="Cron Scheduler" sub="Hourly auto-runs keep the dashboard fresh">
+        <div style={{ background: "var(--navy-900)", color: "#c5cbdb", padding: 18, borderRadius: 8, fontFamily: "'IBM Plex Mono', monospace", fontSize: 12.5, lineHeight: 1.6 }}>
+          <span style={{ color: "var(--accent)" }}>$</span> crontab -e<br/>
+          <span style={{ color: "var(--text-4)" }}># Add this line:</span><br/>
+          0 * * * * cd ~/cyberfusion-complete &amp;&amp; source venv/bin/activate \<br/>
+          {"        "}&amp;&amp; python run_pipeline.py --quick &gt;&gt; data/pipeline.log 2&gt;&amp;1
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+Object.assign(window, { MethodologyPage, ArchitecturePage });
+
+
+/* ==== next module ==== */
+
+// CyberFusion main app
+const App = () => {
+  const [page, setPage] = useState("executive");
+  const [detailId, setDetailId] = useState(null);
+
+  // Tweaks
+  const defaults = /*EDITMODE-BEGIN*/{
+    "accent": "#0FB5A8",
+    "density": "comfortable",
+    "darkSidebar": true,
+    "showPeerBenchmark": true
+  }/*EDITMODE-END*/;
+  const [t, setTweak] = (typeof useTweaks !== "undefined") ? useTweaks(defaults) : [defaults, () => {}];
+
+  // Apply tweaks live
+  useEffect(() => {
+    document.documentElement.style.setProperty("--accent", t.accent);
+    document.documentElement.style.setProperty("--accent-dark", shade(t.accent, -0.15));
+    document.documentElement.style.setProperty("--accent-soft", tint(t.accent, 0.88));
+  }, [t.accent]);
+
+  // Light-sidebar mode
+  useEffect(() => {
+    if (!t.darkSidebar) {
+      document.documentElement.style.setProperty("--navy-800", "#ffffff");
+      document.documentElement.style.setProperty("--navy-900", "#f6f7fb");
+      document.documentElement.style.setProperty("--navy-700", "#f6f7fb");
+      document.documentElement.style.setProperty("--sidebar-text", "#475569");
+      document.documentElement.style.setProperty("--sidebar-text-dim", "#94a3b8");
+      document.documentElement.style.setProperty("--sidebar-border", "#e5e8ef");
+    } else {
+      document.documentElement.style.removeProperty("--navy-800");
+      document.documentElement.style.removeProperty("--navy-900");
+      document.documentElement.style.removeProperty("--navy-700");
+      document.documentElement.style.removeProperty("--sidebar-text");
+      document.documentElement.style.removeProperty("--sidebar-text-dim");
+      document.documentElement.style.removeProperty("--sidebar-border");
+    }
+  }, [t.darkSidebar]);
+
+  const openFinding = (id) => { setDetailId(id); setPage("detail"); };
+  const onNav = (p) => { setPage(p); setDetailId(null); };
+
+  const summary = window.CFData.summary;
+
+  return (
+    <div className="app">
+      <Sidebar page={page} onNav={onNav} summary={summary} />
+      <main className="main">
+        <Topbar page={page} subPage={detailId ? (window.CFData.findings.find(f => f.rule_id === detailId)?.rule_name || "") : ""} onNav={onNav} />
+        {page === "executive" && <ExecutiveView onOpenFinding={openFinding} onNav={onNav} />}
+        {page === "briefing"  && <BriefingPage />}
+        {page === "findings"  && <FindingsPage onOpenFinding={openFinding} />}
+        {page === "feed"      && <ThreatFeed />}
+        {page === "exposure"  && <ExposurePage />}
+        {page === "methodology" && <MethodologyPage />}
+        {page === "architecture" && <ArchitecturePage />}
+        {page === "detail"    && <FindingDetail ruleId={detailId} onBack={() => onNav("findings")} />}
+      </main>
+
+      {/* design-editor panel removed for production demo */}
+    </div>
+  );
+};
+
+// ── color helpers ────────────────────────────────────────────────────
+function hexToRgb(h) {
+  h = h.replace("#", "");
+  if (h.length === 3) h = h.split("").map(c => c+c).join("");
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+function rgbToHex(r,g,b) {
+  return "#" + [r,g,b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2,"0")).join("");
+}
+function shade(hex, pct) {
+  const [r,g,b] = hexToRgb(hex);
+  const f = pct < 0 ? 1 + pct : 1;
+  const t = pct < 0 ? 0 : 255 * pct;
+  return rgbToHex(r*f + t, g*f + t, b*f + t);
+}
+function tint(hex, pct) {
+  // mix with white by pct (0..1)
+  const [r,g,b] = hexToRgb(hex);
+  return rgbToHex(r + (255-r)*pct, g + (255-g)*pct, b + (255-b)*pct);
+}
+
+// Apply density tweak
+const styleEl = document.createElement("style");
+document.head.appendChild(styleEl);
+const observer = new MutationObserver(() => {});
+
+// dark-sidebar toggle
+document.documentElement.dataset.sidebar = "dark";
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+</script>
+</body>
+</html>

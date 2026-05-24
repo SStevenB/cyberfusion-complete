@@ -1,0 +1,75 @@
+# config/assets.yaml
+#
+# Software inventory for each lab host.
+# This is what makes CVE matching REAL instead of a guess.
+#
+# When the correlator sees "CVE affects nginx 1.x" and this file says
+# northstar-web01 runs nginx 1.25.3 — that's a confirmed match,
+# not just "web CVEs exist and web ports are open."
+#
+# Real enterprise tools (Tenable, Qualys, Rapid7) do this automatically
+# via authenticated scans. For a lab/portfolio project, we define it here.
+# In production you'd pull this from your CMDB (ServiceNow, Snipe-IT, etc.)
+
+hosts:
+  northstar-web01:
+    hostname: web01.northstar-analytics.local
+    ip: 172.29.0.10
+    tier: 2
+    label: "Public Web Server"
+    os: "Alpine Linux 3.18"
+    software:
+      - name: nginx
+        version: "1.25.3"
+        cpe: "cpe:2.3:a:nginx:nginx:1.25.3:*:*:*:*:*:*:*"
+      - name: openssl
+        version: "3.1.4"
+        cpe: "cpe:2.3:a:openssl:openssl:3.1.4:*:*:*:*:*:*:*"
+
+  northstar-web02:
+    hostname: web02.northstar-analytics.local
+    ip: 172.29.0.11
+    tier: 2
+    label: "Web Application"
+    os: "Alpine Linux 3.18"
+    software:
+      - name: nginx
+        version: "1.25.3"
+        cpe: "cpe:2.3:a:nginx:nginx:1.25.3:*:*:*:*:*:*:*"
+
+  northstar-ssh01:
+    hostname: ssh01.northstar-analytics.local
+    ip: 172.29.0.12
+    tier: 3
+    label: "SSH Access Host"
+    os: "Ubuntu 22.04 LTS"
+    software:
+      - name: openssh
+        version: "9.3p1"
+        cpe: "cpe:2.3:a:openbsd:openssh:9.3p1:*:*:*:*:*:*:*"
+      - name: openssl
+        version: "3.0.2"
+        cpe: "cpe:2.3:a:openssl:openssl:3.0.2:*:*:*:*:*:*:*"
+
+  vpn01:
+    hostname: vpn01.northstar-analytics.local
+    ip: "10.0.0.1"
+    tier: 1
+    label: "VPN Gateway"
+    os: "Ubuntu 22.04 LTS"
+    software:
+      - name: openvpn
+        version: "2.6.3"
+        cpe: "cpe:2.3:a:openvpn:openvpn:2.6.3:*:*:*:*:*:*:*"
+
+  dc01:
+    hostname: dc01.northstar-analytics.local
+    ip: "10.0.0.2"
+    tier: 1
+    label: "Domain Controller"
+    os: "Windows Server 2022"
+    software:
+      - name: active_directory
+        version: "2022"
+      - name: dns
+        version: "10.0"
