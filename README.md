@@ -11,7 +11,7 @@ CyberFusion — Threat Intelligence Prioritization Platform
 
 ## 🔗 Live Demo
 
-**[View the interactive demo →](https://STEVENSCARIA.github.io/cyberfusion-complete/)**
+**[View the interactive demo →] https://SStevenB.github.io/cyberfusion-complete**
 
 A static, self-contained build of the dashboard hosted on GitHub Pages. The
 findings, risk scores, CVEs (NIST NVD), CISA KEV entries, security news, and
@@ -21,8 +21,6 @@ benchmark, MTTR, briefing history), and breach/exposure records are
 clearly-labeled synthetic. The in-app **Methodology → About This Demo** panel
 spells out exactly what is real vs. illustrative.
 
-> Replace `STEVENSCARIA` and `cyberfusion-complete` in the link above with your
-> GitHub username and repository name once published.
 
 ---
 
