@@ -1,6 +1,6 @@
-# 🛡️ CyberFusion — Threat Intelligence Prioritization Platform
+CyberFusion — Threat Intelligence Prioritization Platform
 
-> A portfolio-grade, explainable cyber risk fusion engine built in Python — designed to mirror real SOC/CTI analyst workflows using public intelligence sources, authorized telemetry, and rule-based signal correlation.
+> A cyber risk fusion engine built in Python — designed to mirror real SOC/CTI analyst workflows using public intelligence sources, authorized telemetry, and rule-based signal correlation.
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Dashboard-Streamlit-red.svg)](https://streamlit.io/)
@@ -28,7 +28,7 @@ spells out exactly what is real vs. illustrative.
 
 ## What This Project Does
 
-CyberFusion is a multi-source threat intelligence aggregation and risk prioritization system. It ingests signals from five categories of public/authorized data sources, normalizes them into a unified schema, applies rule-based correlation logic, scores the resulting findings by business risk, and presents everything in an interactive analyst dashboard.
+CyberFusion is a multi-source threat intelligence aggregation and risk prioritization system. It ingests signals from five categories of public/authorized data sources, normalizes them, applies rule-based correlation logic, scores the resulting findings by business risk, and presents everything in an interactive analyst dashboard.
 
 **The core pipeline: Collect → Normalize → Correlate → Score → Visualize**
 
@@ -72,7 +72,7 @@ This mirrors the core workflow of real CTI platforms like Recorded Future, Threa
 ## Features
 
 ### Data Sources (All Public / Authorized)
-| Source | What It Provides | API Key? |
+| Source | What It Provides | API Key |
 |--------|-----------------|----------|
 | NIST NVD | CVE vulnerability data | None required |
 | RSS Feeds | Security news (Krebs, BleepingComputer) | None |
@@ -170,7 +170,6 @@ cyber-intel-fusion/
 ## Ethics & Scope
 
 - **No unauthorized scanning.** All TCP scans target `localhost` or Docker lab containers only.
-- **No dark web access.** Exposure monitoring uses the public HaveIBeenPwned API only.
 - **No credential harvesting.** The project never stores, displays, or processes real user credentials.
 - **No illegal activity.** Every data source used is public, rate-limited, and used per its terms of service.
 - **Synthetic data is clearly labeled.** All generated mock data is identified in the UI and in code comments.
@@ -178,8 +177,6 @@ cyber-intel-fusion/
 ---
 
 ## Skills Demonstrated
-
-> For recruiters and hiring managers reviewing this project:
 
 - **Python architecture** — modular pipeline with clean separation of concerns
 - **REST API integration** — multiple third-party APIs with graceful error handling
