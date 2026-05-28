@@ -25,6 +25,46 @@ spells out exactly what is real vs. illustrative.
 
 ---
 
+## Screenshots
+
+The React + FastAPI web app, populated with real pipeline output.
+
+### Executive Security Summary
+Aggregate risk score, real run-over-run trend, KPI cards, and the highest-risk correlated findings with MITRE ATT&CK mappings.
+
+![Executive View](docs/screenshots/01-executive.png)
+
+### Data Sources
+Configure API connectors or upload evidence files. Sources are grouped by category with live status; the HaveIBeenPwned connector is a real live-API integration, others are honestly labeled.
+
+![Data Sources](docs/screenshots/02-data-sources.png)
+
+### Correlated Findings
+Every finding shows its rule, severity, risk score, evidence trail, and recommended action — with status tracking (open / acknowledged / resolved / false positive).
+
+![Correlated Findings](docs/screenshots/03-findings.png)
+
+### AI Briefing
+A structured CISO-style briefing generated from current findings — written by a local LLM (Ollama, free) when available, with a transparent fallback.
+
+![AI Briefing](docs/screenshots/04-briefing.png)
+
+<details>
+<summary><strong>More screenshots</strong> (Threat Feed, Exposure &amp; Breach, Methodology)</summary>
+
+### Threat Feed
+![Threat Feed](docs/screenshots/05-threat-feed.png)
+
+### Exposure & Breach
+![Exposure and Breach](docs/screenshots/06-exposure.png)
+
+### Methodology & Transparency
+![Methodology](docs/screenshots/07-methodology.png)
+
+</details>
+
+---
+
 ## What This Project Does
 
 CyberFusion is a multi-source threat intelligence aggregation and risk prioritization platform. It ingests signals from public/authorized data sources **and from security evidence a user uploads or connects** (vulnerability scans, asset inventories, breach exports, identity-risk logs, STIX threat intel), normalizes everything into a unified schema, applies rule-based correlation logic, scores the resulting findings by business risk, and presents them in an interactive analyst dashboard. Configured sources are **saved to a local workspace** so a returning user doesn't re-upload each session.
