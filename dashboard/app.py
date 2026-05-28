@@ -108,6 +108,16 @@ st.sidebar.markdown("**Threat Intelligence Platform**")
 st.sidebar.caption("northstar-analytics.local · Lab / Demo")
 st.sidebar.markdown("---")
 
+# ── First-run onboarding gate ─────────────────────────────────────────────────
+# If the workspace hasn't been set up yet, show the onboarding wizard and stop.
+# This makes CyberFusion feel like a configured product you return to.
+from ingestion import source_registry as _reg
+_ws = _reg.load_workspace()
+if not _ws.get("onboarded", False):
+    from dashboard.sources_page import render_onboarding
+    render_onboarding()
+    st.stop()
+
 # ── Detect URL routing for finding detail view ────────────────────────────────
 # When the URL has ?finding=CORR-001 we show the Finding Detail page in the
 # main content area while keeping the sidebar navigation visible.
@@ -124,6 +134,8 @@ def _on_nav_change():
 
 sidebar_page = st.sidebar.radio("Navigate", [
     "🏠 Executive View",
+    "🔌 Data Sources",
+    "📥 Upload Evidence",
     "🤖 AI Briefing",
     "📡 Threat Feed",
     "🔭 Exposure & Breach",
@@ -232,6 +244,142 @@ if page == "🏠 Executive View":
             if st.button("Open full detail page →", key=f"action_{rid}_{i}"):
                 st.query_params["finding"] = rid
                 st.rerun()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PAGE — UPLOAD EVIDENCE (ingestion layer)
+# ══════════════════════════════════════════════════════════════════════════════
+elif page == "📥 Upload Evidence":
+    from ingestion.file_router import (parse_upload, save_records, list_uploads,
+                                       clear_uploads, SUPPORTED_TYPES)
+
+    st.title("Upload Security Evidence")
+    st.caption("Ingest authorized security exports — scans, vulnerability reports, asset inventories, breach exports.")
+
+    st.info(
+        "**Objective.** CyberFusion interprets uploaded evidence the same way it "
+        "interprets its live API feeds: every file is parsed, validated, normalized "
+        "into the unified schema, and fed into the correlation + scoring engine. "
+        "Uploads **supplement** the live data — they don't replace it."
+    )
+
+    st.warning(
+        "⚠️ **Authorized use only.** Upload data only for systems and domains you own or are "
+        "authorized to assess. CyberFusion never scans external infrastructure itself — it "
+        "only interprets evidence you provide. Breach exports should be for domains you control."
+    )
+
+    # ── Supported formats + sample files ─────────────────────────────────────
+    with st.expander("📋 Supported file types & sample files", expanded=False):
+        st.markdown("""
+| File type | Real-world source | What it produces |
+|-----------|-------------------|------------------|
+| **Nmap XML** | `nmap -oX scan.xml <authorized-target>` | Open-port scan findings |
+| **Vulnerability CSV** | Nessus / Tenable / Qualys / OpenVAS export | CVE / vulnerability findings |
+| **Asset inventory CSV** | CMDB export, asset spreadsheet | Asset criticality tiers |
+| **Breach export CSV** | HaveIBeenPwned domain search (domain you own) | Breach / exposure signals |
+
+Sample files for testing live in the **`samples/`** folder of the project:
+`sample_nmap_scan.xml`, `sample_vuln_scan.csv`, `sample_asset_inventory.csv`, `sample_breach_export.csv`.
+All sample data is for the fictional `northstar-analytics.local` lab environment.
+        """)
+
+    st.markdown("---")
+
+    # ── Uploader ──────────────────────────────────────────────────────────────
+    col_up, col_type = st.columns([2, 1])
+    with col_up:
+        uploaded = st.file_uploader(
+            "Upload an evidence file",
+            type=["xml", "csv"],
+            help="Nmap XML, or CSV from a vulnerability scanner / asset inventory / breach export."
+        )
+    with col_type:
+        type_labels = {k: v for k, v in SUPPORTED_TYPES}
+        forced = st.selectbox(
+            "File type",
+            options=[k for k, _ in SUPPORTED_TYPES],
+            format_func=lambda k: type_labels[k],
+            help="Leave on Auto-detect unless detection picks the wrong parser."
+        )
+
+    if uploaded is not None:
+        try:
+            text = uploaded.getvalue().decode("utf-8", errors="replace")
+        except Exception as e:
+            st.error(f"Could not read file: {e}")
+            text = ""
+
+        if text:
+            result = parse_upload(uploaded.name, text, forced)
+
+            # ── Parse result feedback ─────────────────────────────────────────
+            if result.errors:
+                st.error("**Parsing issues:**")
+                for err in result.errors[:10]:
+                    st.markdown(f"- {err}")
+
+            if result.ok:
+                st.success(f"✅ {result.summary}")
+
+                # Preview the parsed records before committing them.
+                st.markdown(f"**Preview — {len(result.records)} record(s) parsed as `{result.file_type}`:**")
+                preview_rows = []
+                for r in result.records[:25]:
+                    preview_rows.append({
+                        "Type": r.get("type", ""),
+                        "Title": (r.get("title", "") or "")[:60],
+                        "Severity": r.get("severity", ""),
+                        "Asset": r.get("asset", "") or "—",
+                    })
+                st.dataframe(pd.DataFrame(preview_rows), use_container_width=True, hide_index=True)
+
+                st.caption("Review the parsed records above. Confirm to add them to the evidence store; "
+                           "they'll be included the next time you run the pipeline.")
+
+                if st.button("✅ Confirm & add to evidence store", type="primary"):
+                    saved = save_records(result, uploaded.name)
+                    st.success(f"Saved {len(result.records)} record(s). Run the pipeline to correlate them.")
+                    st.cache_data.clear()
+            elif not result.errors:
+                st.warning(result.summary or "No usable records found in this file.")
+
+    st.markdown("---")
+
+    # ── Currently stored uploads ──────────────────────────────────────────────
+    st.subheader("Stored Evidence")
+    uploads = list_uploads()
+    if not uploads:
+        st.info("No uploaded evidence yet. Upload a file above, or try a file from `samples/`.")
+    else:
+        total_records = sum(u["record_count"] for u in uploads)
+        st.caption(f"{len(uploads)} file(s) · {total_records} record(s) staged for the pipeline.")
+        st.dataframe(pd.DataFrame([{
+            "File": u["filename"],
+            "Type": u["file_type"],
+            "Records": u["record_count"],
+            "Ingested": u["ingested_at"],
+        } for u in uploads]), use_container_width=True, hide_index=True)
+
+        col_a, col_b = st.columns([1, 1])
+        with col_a:
+            st.markdown("**Re-run pipeline** to correlate uploaded evidence:")
+            st.code("python run_pipeline.py", language="bash")
+        with col_b:
+            st.markdown("**Remove all uploaded evidence** (does not touch live API data):")
+            if st.button("🗑️ Clear uploaded evidence"):
+                n = clear_uploads()
+                st.success(f"Cleared {n} uploaded file(s). Re-run the pipeline to update findings.")
+                st.cache_data.clear()
+                st.rerun()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PAGE — DATA SOURCES (configured platform)
+# ══════════════════════════════════════════════════════════════════════════════
+elif page == "🔌 Data Sources":
+    from dashboard.sources_page import render_data_sources
+    render_data_sources()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -646,7 +794,9 @@ elif page == "ℹ️ Architecture":
 | `breach_monitor.py` | Checks domain breach history via HaveIBeenPwned |
 | `ip_reputation.py` | Enriches IPs with Shodan + GreyNoise classification |
 | `scanner.py` | TCP port scan of lab Docker containers |
-| `normalizer.py` | Converts all sources into a unified schema |
+| `ingestion/file_router.py` | **Upload ingestion** — routes uploaded files to the right parser |
+| `ingestion/parsers/*` | Parse nmap XML, vuln CSV, asset inventory, breach exports |
+| `normalizer.py` | Converts all sources (incl. uploads) into a unified schema |
 | `correlator.py` | 8 detection rules linking signals across sources |
 | `risk_scorer.py` | Explainable scoring with asset criticality multipliers |
 | `briefing.py` | **AI briefing** — Claude generates a CISO-ready summary from live data |
@@ -666,6 +816,47 @@ for their CISO. This tool does it in seconds, grounded in live data:
 
 The output is a structured briefing that prioritizes what matters today, 
 explains it in plain English, and gives concrete action items.
+
+## Upload-Driven Evidence Ingestion
+
+Beyond its live API feeds, CyberFusion ingests **authorized security evidence**
+that a user uploads — turning it into the same normalized records the rest of
+the pipeline already understands:
+
+| Upload type | Becomes | Feeds rules |
+|-------------|---------|-------------|
+| Nmap XML | `scan_finding` records | RDP/SSH/web/login exposure rules |
+| Vulnerability CSV (Nessus/Tenable/Qualys) | `vulnerability` records | Web-CVE + KEV rules |
+| Asset inventory CSV | asset criticality tiers | Score multipliers (×1.0–1.5) |
+| Breach export CSV (HIBP) | `breach` records | Credential-stuffing + email-exposure rules |
+
+Uploaded evidence **supplements** the live data — it never replaces the public
+API feeds. Because parsers emit the unified schema directly, the correlation
+engine and risk scorer consume uploads with zero special-casing.
+
+## Configured Platform: Source Registry & Connectors
+
+CyberFusion isn't just a one-shot uploader — it's a **configured platform you
+return to**. A first-run onboarding wizard sets up your workspace; configured
+sources persist locally so you never re-enter everything.
+
+| Module | What It Does |
+|--------|-------------|
+| `ingestion/source_registry.py` | Saved registry of configured sources (type, mode, status, last-sync, provenance) → `data/workspace.json` |
+| `ingestion/secrets.py` | API credentials in your OS keychain (via `keyring`), with a gitignored local-file fallback |
+| `ingestion/connectors/` | Connector interface + Tenable/Qualys/HIBP/M365/STIX stubs |
+| `dashboard/sources_page.py` | Onboarding wizard + Data Sources management page |
+
+**Two ways to connect, mirroring a real Threat Intelligence Platform:**
+1. **API connector** — for supported vendors (Tenable, Qualys, HIBP, M365/Entra, STIX/TAXII)
+2. **Manual file upload** — a universal fallback, fully implemented for every source
+
+**Honest status:** upload mode is fully working for all source types. Live API
+connectors are **scaffolded** — the configuration, credential storage, and
+connection-test paths are real, but live vendor-API fetch is intentionally not
+wired (a student project can't verify calls against real Tenable/Qualys/Entra
+tenants). Each connector clearly labels itself as scaffolded and points to the
+working upload path. Nothing fakes a live integration.
 
 ## Risk Scoring Formula
 ```
@@ -691,7 +882,10 @@ Capped at 100. Every point is documented in the score breakdown.
 # FINDING DETAIL VIEW (triggered by ?finding=CORR-XXX URL parameter)
 # ══════════════════════════════════════════════════════════════════════════════
 if page == "__detail__":
-    from methodology import get_rule_docs, get_data_source
+    try:
+        from methodology import get_rule_docs, get_data_source
+    except ModuleNotFoundError:
+        from dashboard.methodology import get_rule_docs, get_data_source
 
     findings = load_findings()
     finding = next((f for f in findings if f.get("rule_id") == selected_finding_id), None)
@@ -861,7 +1055,10 @@ if page == "__detail__":
 # METHODOLOGY PAGE — explains how the platform works end-to-end
 # ══════════════════════════════════════════════════════════════════════════════
 elif page == "🧪 Methodology":
-    from methodology import RULE_DOCS, DATA_SOURCES
+    try:
+        from methodology import RULE_DOCS, DATA_SOURCES
+    except ModuleNotFoundError:
+        from dashboard.methodology import RULE_DOCS, DATA_SOURCES
 
     st.title("Methodology & Transparency")
     st.caption("Every score, every signal, every data source — fully documented.")

@@ -19,6 +19,7 @@ from typing import Any, Optional, List, Dict
 
 RAW_DIR       = os.path.join(os.path.dirname(__file__), "..", "data", "raw")
 PROCESSED_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "processed")
+UPLOADS_DIR   = os.path.join(os.path.dirname(__file__), "..", "data", "uploads")
 
 # Asset criticality — drives score multipliers in the risk scorer.
 # Tier 1 = most critical (identity infra, VPN, domain controllers)
@@ -298,6 +299,74 @@ def normalize_ip_reputation(ip_rep_file: str) -> List[Dict[str, Any]]:
 
 # ── Master normalization runner ───────────────────────────────────────────────
 
+def _merge_uploaded_asset_criticality() -> int:
+    """
+    If any uploaded asset-inventory file carried a criticality map, merge it
+    into ASSET_CRITICALITY so uploaded assets get correct score multipliers.
+    Returns the number of assets merged. User-provided data takes precedence.
+    """
+    if not os.path.exists(UPLOADS_DIR):
+        return 0
+    merged = 0
+    for fn in os.listdir(UPLOADS_DIR):
+        if not fn.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(UPLOADS_DIR, fn)) as f:
+                payload = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            continue
+        cmap = (payload.get("meta") or {}).get("criticality_map") or {}
+        for host, ctx in cmap.items():
+            ASSET_CRITICALITY[host] = {
+                "tier": ctx.get("tier", 3),
+                "label": ctx.get("label", "Asset"),
+                "multiplier": ctx.get("multiplier", 1.0),
+            }
+            merged += 1
+    if merged:
+        print(f"[Normalizer] Merged {merged} uploaded asset criticality entr(ies)")
+    return merged
+
+
+def load_uploaded_items() -> List[Dict[str, Any]]:
+    """
+    Load all records from data/uploads/*.json. These were already written in
+    the normalized schema by the ingestion parsers, so they need no further
+    transformation — uploads SUPPLEMENT the live API data.
+
+    We re-apply asset context here in case an uploaded asset inventory changed
+    the criticality of a host referenced by an uploaded scan/vuln record.
+    'asset' records themselves are inventory metadata, not findings, so we keep
+    them out of the correlation stream (the correlator ignores unknown types,
+    but excluding them keeps counts honest).
+    """
+    if not os.path.exists(UPLOADS_DIR):
+        return []
+    items: List[Dict[str, Any]] = []
+    for fn in sorted(os.listdir(UPLOADS_DIR)):
+        if not fn.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(UPLOADS_DIR, fn)) as f:
+                payload = json.load(f)
+        except (json.JSONDecodeError, OSError) as e:
+            print(f"[Normalizer] Skipping unreadable upload {fn}: {e}")
+            continue
+        for it in payload.get("items", []):
+            # Re-apply asset context (criticality may have been updated above).
+            ctx = get_asset_context(it.get("asset") or "")
+            it["asset_tier"] = ctx["tier"]
+            it["asset_label"] = ctx["label"]
+            it["asset_multiplier"] = ctx["multiplier"]
+            items.append(it)
+    findings = [i for i in items if i.get("type") != "asset"]
+    asset_meta = [i for i in items if i.get("type") == "asset"]
+    print(f"[Normalizer] Uploaded evidence: {len(findings)} finding record(s), "
+          f"{len(asset_meta)} asset inventory record(s)")
+    return items
+
+
 def run_normalization() -> List[Dict[str, Any]]:
     """
     Load all available raw files and normalize them into a single unified list.
@@ -305,6 +374,10 @@ def run_normalization() -> List[Dict[str, Any]]:
     Returns all normalized items sorted by timestamp descending.
     """
     all_items = []
+
+    # Merge any uploaded asset-inventory criticality FIRST so multipliers are
+    # correct when we re-apply asset context to all items below.
+    _merge_uploaded_asset_criticality()
 
     # Load KEV IDs for CVE cross-referencing
     kev_ids = set()
@@ -334,6 +407,10 @@ def run_normalization() -> List[Dict[str, Any]]:
                 print(f"[Normalizer] Error normalizing {key}: {e}")
         else:
             print(f"[Normalizer] Skipping {key} — file not found: {filepath}")
+
+    # ── Uploaded evidence (supplements live API data) ──
+    uploaded = load_uploaded_items()
+    all_items.extend(uploaded)
 
     all_items.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
 

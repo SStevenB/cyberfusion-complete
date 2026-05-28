@@ -81,6 +81,17 @@ def build_cfdata():
     kev_entries = kev_raw.get("vulnerabilities", []) if isinstance(kev_raw, dict) else []
     kev_ids = {e.get("cveID") for e in kev_entries}
 
+    # ── finding status overlay ──
+    # User-set statuses (resolved/acknowledged/false_positive) persist in a
+    # separate file so they survive pipeline re-runs that regenerate findings.
+    _status_file = os.path.join(os.path.dirname(__file__), "data", "finding_status.json")
+    _status_overlay = {}
+    try:
+        with open(_status_file) as _sf:
+            _status_overlay = json.load(_sf).get("statuses", {})
+    except Exception:
+        _status_overlay = {}
+
     # ── findings ──
     findings = []
     for f in findings_in:
@@ -104,7 +115,7 @@ def build_cfdata():
             "affected_assets": f.get("affected_assets", []),
             "recommendation": f.get("recommendation", ""),
             "score_breakdown": parse_breakdown(f.get("score_breakdown", [])),
-            "status": f.get("status", "open"),
+            "status": _status_overlay.get(f.get("rule_id", ""), f.get("status", "open")),
             "ageDays": days_since(f.get("scored_at", scored_at)),
             "detectedAt": (f.get("scored_at", scored_at) or "")[:16].replace("T", " ") + " UTC",
         })

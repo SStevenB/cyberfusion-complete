@@ -1,0 +1,20 @@
+# render.yaml — deploy CyberFusion as a single web service on Render.
+# The FastAPI process serves both the REST API (/api/*) and the built React
+# app (frontend/dist) from one port.
+#
+# Render reads this file automatically when you create a "Blueprint" from the repo.
+services:
+  - type: web
+    name: cyberfusion
+    runtime: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "uvicorn api.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.4"
+      - key: NODE_VERSION
+        value: "20.18.0"
+      # Secrets are stored in the OS keychain locally; on a server there is no
+      # keychain, so the gitignored file fallback is used. Set real connector
+      # API keys via Render's dashboard env vars if you wire live connectors.

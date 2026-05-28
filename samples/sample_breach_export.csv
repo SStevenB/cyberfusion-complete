@@ -1,0 +1,4 @@
+Email,Breach Name,Domain,Breach Date,Data Classes,Pwn Count
+j.smith@northstar-analytics.local,LinkedIn Scrape 2021,linkedin.com,2021-06-22,Email addresses;Job titles;Names,700000000
+a.kumar@northstar-analytics.local,Collection1,unknown,2019-01-07,Email addresses;Passwords,772904991
+m.lopez@northstar-analytics.local,Adobe,adobe.com,2013-10-04,Email addresses;Passwords;Password hints,152445165

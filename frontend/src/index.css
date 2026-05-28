@@ -1,0 +1,4 @@
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; height: 100%; }
+body { font-family: "Manrope", system-ui, -apple-system, sans-serif; }

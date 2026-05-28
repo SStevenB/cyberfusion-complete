@@ -1,0 +1,5 @@
+Plugin Name,CVE,CVSS,Risk,Host,Synopsis
+Apache HTTP Server Multiple Vulnerabilities,CVE-2024-38476,9.8,Critical,web01.northstar-analytics.local,The remote Apache web server is affected by multiple vulnerabilities.
+nginx SSL/TLS Vulnerability,CVE-2025-23419,7.4,High,web01.northstar-analytics.local,The remote nginx server is affected by a TLS session resumption flaw.
+OpenSSH User Enumeration,CVE-2023-51385,5.3,Medium,ssh01.northstar-analytics.local,The remote SSH server is affected by a user enumeration vulnerability.
+SSL Certificate Expiry,,2.0,Low,web02.northstar-analytics.local,The SSL certificate on this host will expire soon.

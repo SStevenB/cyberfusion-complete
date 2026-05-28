@@ -52,3 +52,18 @@ pipeline:
   cve_max_results: 30
   news_max_per_feed: 10
   save_history: true      # Keep previous run results for trend comparison
+
+# ── Configured Platform (Phase 6) ─────────────────────────────────────────────
+# The Data Sources page and onboarding wizard store their state locally — you do
+# NOT configure these by hand here. They are listed so you know where state lives:
+#
+#   data/workspace.json        Saved source registry (types, modes, status,
+#                              last-sync, provenance). Gitignored.
+#   data/secrets.local.json    Fallback secret store, used ONLY if the `keyring`
+#                              package / OS keychain is unavailable. Gitignored,
+#                              chmod 600. Prefer installing `keyring` so API
+#                              credentials go to your OS keychain instead.
+#
+# API connectors (Tenable, Qualys, HIBP, M365/Entra, STIX/TAXII) are configured
+# in the UI on the Data Sources page, not in this file. Live vendor-API fetch is
+# scaffolded; manual file upload is fully implemented for every source.

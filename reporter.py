@@ -32,7 +32,7 @@ SEVERITY_RGB = {
     "HIGH":     colors.HexColor("#EF9F27"),
     "MEDIUM":   colors.HexColor("#378ADD"),
     "LOW":      colors.HexColor("#1D9E75"),
-}
+} if REPORTLAB_AVAILABLE else {}
 
 
 import re as _re

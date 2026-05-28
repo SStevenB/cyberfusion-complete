@@ -1,0 +1,7 @@
+Hostname,IP,Tier,Role,Internet Facing
+vpn01.northstar-analytics.local,172.29.0.20,1,VPN Gateway,yes
+dc01.northstar-analytics.local,172.29.0.5,1,Domain Controller,no
+web01.northstar-analytics.local,172.29.0.10,2,Public Web Server,yes
+web02.northstar-analytics.local,172.29.0.11,2,Web Application,yes
+ssh01.northstar-analytics.local,172.29.0.12,3,SSH Access Host,no
+workstation-042.northstar-analytics.local,172.29.1.42,3,Employee Endpoint,no
