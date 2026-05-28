@@ -291,6 +291,56 @@ def test_source(source_id: str):
     return reg.test_source_connection(source_id)
 
 
+@app.post("/api/sources/{source_id}/fetch")
+def fetch_source(source_id: str):
+    """Run the connector's live fetch() for a configured source and stage the
+    returned records as evidence so the pipeline picks them up on the next run.
+    Only works for connectors whose STATUS is 'implemented'."""
+    src = reg.get_source(source_id)
+    if not src:
+        raise HTTPException(404, "Source not found")
+    if src.get("mode") != "connector":
+        raise HTTPException(400, "This source is in upload mode — use the Upload tab instead.")
+    try:
+        from ingestion.connectors import get_connector
+    except Exception as e:
+        raise HTTPException(500, f"Connector layer unavailable: {e}")
+    conn = get_connector(src["type"])
+    if conn is None:
+        raise HTTPException(400, "No connector for this source type.")
+    if conn.STATUS != "implemented":
+        return {"ok": False, "status": "scaffolded",
+                "message": (f"The {conn.label} connector is scaffolded — live fetch isn't "
+                            "wired. Use the file-upload mode instead.")}
+
+    # Collect config + secrets
+    config = src.get("config", {})
+    secret_values = {f: (reg.get_source_secret(source_id, f) or "")
+                     for f in (conn.secret_fields + getattr(conn, "optional_secret_fields", []))}
+
+    try:
+        result = conn.fetch(config, secret_values)
+    except Exception as e:
+        reg.mark_synced(source_id, src.get("record_count", 0), error=str(e))
+        raise HTTPException(500, f"Fetch failed: {e}")
+
+    if not result.ok:
+        reg.mark_synced(source_id, src.get("record_count", 0), error=result.message)
+        return {"ok": False, "message": result.message}
+
+    # Stage the records as if they were uploaded — re-uses the same evidence store.
+    from ingestion.schema import ParseResult
+    pr = ParseResult(file_type=f"connector_{src['type']}",
+                     records=result.records,
+                     summary=f"Pulled {len(result.records)} record(s) from {conn.label}.",
+                     errors=[])
+    saved = file_router.save_records(pr, f"hibp_live_{source_id}.json")
+    reg.mark_synced(source_id, len(result.records))
+    return {"ok": True, "records": len(result.records),
+            "message": result.message,
+            "endpoint_used": result.records_meta.get("endpoint")}
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # WORKSPACE / ONBOARDING  (reuses ingestion.source_registry)
 # ══════════════════════════════════════════════════════════════════════════════

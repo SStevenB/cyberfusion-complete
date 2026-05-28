@@ -103,6 +103,11 @@ const CFApi = {
     if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || `briefing ${r.status}`); }
     return r.json();
   },
+  async fetchSource(id) {
+    const r = await fetch(`${_api}/api/sources/${id}/fetch`, { method: "POST" });
+    if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || `fetch ${r.status}`); }
+    return r.json();
+  },
 };
 
 window.CFApi = CFApi;

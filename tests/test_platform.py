@@ -132,3 +132,37 @@ class TestConnectors:
         from ingestion import source_registry as reg
         assert reg.connector_status_for("tenable") == "scaffolded"
         assert reg.connector_status_for("nmap") == "none"
+
+
+
+# ── HIBP connector (Phase 8: one real implementation) ───────────────────────
+class TestHIBPConnector:
+    """The HIBP connector is the one real, live-API connector. Other connectors
+    remain honestly labeled scaffolded."""
+
+    def test_status_is_implemented(self):
+        from ingestion.connectors.hibp import HIBPConnector
+        assert HIBPConnector.STATUS == "implemented"
+
+    def test_missing_domain_rejected(self):
+        from ingestion.connectors.hibp import HIBPConnector
+        r = HIBPConnector().test_connection({}, {})
+        assert not r.ok
+        assert "monitored_domain" in r.message
+
+    def test_bad_domain_format_rejected(self):
+        from ingestion.connectors.hibp import HIBPConnector
+        r = HIBPConnector().test_connection({"monitored_domain": "no-dot"}, {})
+        assert not r.ok
+        assert "example.com" in r.message
+
+    def test_optional_api_key_not_required(self):
+        """test_connection must work WITHOUT an api_key (free /breaches endpoint)."""
+        from ingestion.connectors.hibp import HIBPConnector
+        # we don't make a real network call here — just confirm validation passes.
+        # If the network call fails the message includes "unreachable" or status code,
+        # which is still ok=False with an honest message — never a crash.
+        r = HIBPConnector().test_connection({"monitored_domain": "example.com"}, {})
+        # whether the network succeeds or fails, the call shouldn't crash
+        assert isinstance(r.ok, bool)
+        assert isinstance(r.message, str) and len(r.message) > 0

@@ -244,6 +244,21 @@ const ConnectorConfig = ({ s, meta, onTest, setMsg }) => {
       <div className="row-gap" style={{ marginTop: 12 }}>
         <button className="btn btn-sm" onClick={save}>Save settings</button>
         <button className="btn btn-sm btn-accent" onClick={onTest}><Icon name="radar" size={13} />Test connection</button>
+        {meta.connector_status === "implemented" && (
+          <button className="btn btn-sm btn-accent" onClick={async (e) => {
+            const b = e.currentTarget; const o = b.textContent;
+            b.disabled = true; b.textContent = "Syncing…";
+            try {
+              const r = await window.CFApi.fetchSource(s.id);
+              if (r.ok) {
+                setMsg({ kind: "ok", text: `Synced — pulled ${r.records} record(s) from the vendor API. Run the pipeline to correlate.` });
+              } else {
+                setMsg({ kind: "err", text: r.message || "Sync did not complete." });
+              }
+            } catch (err) { setMsg({ kind: "err", text: String(err) }); }
+            finally { b.disabled = false; b.textContent = o; }
+          }}><Icon name="download" size={13} />Sync now</button>
+        )}
       </div>
     </div>
   );

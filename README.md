@@ -162,6 +162,11 @@ cd frontend && unset NODE_ENV && npm install --include=dev && npm run dev
 ```
 For a single-server production build: `./build.sh` then
 `uvicorn api.main:app --host 0.0.0.0 --port 8000` (serves API + app on one port).
+Or just use `./start.sh` which handles port conflicts + venv automatically.
+
+**For real AI-written briefings** (instead of templates), run `./start_ollama.sh`
+in another terminal once — it starts a free local LLM. The "Generate briefing"
+button then produces real AI prose; otherwise it falls back to a grounded template.
 
 **Option B — Streamlit dashboard (alternative):**
 ```bash
@@ -255,6 +260,7 @@ cyberfusion-complete/
 - [x] **Phase 5**: Upload-driven evidence ingestion (6 parsers) + correlation integration
 - [x] **Phase 6**: Configured platform — source registry, onboarding, Data Sources page, secret handling, connector scaffolding
 - [x] **Phase 7**: React + FastAPI web app (live data, uploads, pipeline runs over HTTP) + deployment config
+- [x] **Phase 8**: First real live-API connector — HIBP (free /breaches?domain= endpoint, optional paid /breacheddomain support); local Ollama briefings (free AI); commit + deploy
 - [ ] **Next**: Live Tenable/Qualys/Graph/TAXII connector fetch (currently scaffolded)
 
 ---

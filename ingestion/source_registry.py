@@ -70,10 +70,12 @@ SOURCE_TYPES: Dict[str, Dict[str, Any]] = {
         "category": "External Exposure",
         "modes": ["connector", "upload"],
         "parser_key": "hibp_csv",
-        "connector_status": "scaffolded",
-        "connector_fields": ["api_key", "monitored_domain"],
-        "description": "Breach exposure for a domain you own or are authorized to monitor.",
-        "authorization_note": "Domain-ownership/authorization is required by the HIBP API.",
+        "connector_status": "implemented",
+        "connector_fields": ["monitored_domain", "api_key"],
+        "description": ("Breach exposure for a domain. Uses the FREE /breaches?domain= "
+                        "endpoint (no key needed). If a paid HIBP API key is provided, "
+                        "the paid /breacheddomain endpoint is used for per-account detail."),
+        "authorization_note": "Only query domains you own or are authorized to monitor.",
     },
     "asset_inventory": {
         "label": "Asset Inventory",
