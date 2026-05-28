@@ -166,3 +166,48 @@ class TestHIBPConnector:
         # whether the network succeeds or fails, the call shouldn't crash
         assert isinstance(r.ok, bool)
         assert isinstance(r.message, str) and len(r.message) > 0
+
+
+
+# ── History / trend (Phase 9: real trend from accumulated runs) ──────────────
+class TestHistory:
+    @pytest.fixture(autouse=True)
+    def isolate_history(self, tmp_path, monkeypatch):
+        from analysis import history
+        monkeypatch.setattr(history, "HISTORY_DIR", str(tmp_path / "history"))
+        yield
+
+    def test_empty_history_not_real(self):
+        from analysis.history import build_trend
+        t = build_trend()
+        assert t["real"] is False and t["runs"] == 0
+
+    def test_single_run_not_real(self):
+        from analysis.history import record_snapshot, build_trend
+        record_snapshot([{"risk_label": "HIGH", "risk_score": 60}])
+        t = build_trend()
+        assert t["runs"] == 1 and t["real"] is False
+
+    def test_two_runs_makes_real_trend(self):
+        import time
+        from analysis.history import record_snapshot, build_trend
+        record_snapshot([{"risk_label": "CRITICAL", "risk_score": 90}])
+        time.sleep(1.1)  # filename timestamp is per-second
+        record_snapshot([{"risk_label": "HIGH", "risk_score": 55},
+                         {"risk_label": "LOW", "risk_score": 10}])
+        t = build_trend()
+        assert t["runs"] == 2 and t["real"] is True
+        assert t["points"][0]["crit"] == 1   # first run had 1 critical
+        assert t["points"][1]["high"] == 1   # second run had 1 high
+
+    def test_snapshot_counts_severities(self):
+        from analysis.history import record_snapshot, load_history
+        record_snapshot([
+            {"risk_label": "CRITICAL", "risk_score": 90},
+            {"risk_label": "CRITICAL", "risk_score": 85},
+            {"risk_label": "MEDIUM", "risk_score": 30},
+        ])
+        h = load_history()
+        assert h[-1]["summary"]["critical"] == 2
+        assert h[-1]["summary"]["medium"] == 1
+        assert h[-1]["total"] == 3

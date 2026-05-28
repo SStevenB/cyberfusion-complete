@@ -2,6 +2,7 @@
 const ExecutiveView = ({ onOpenFinding, onNav }) => {
   const d = window.CFData;
   const { riskScore, summary, delta, findings, trend } = d;
+  const trendReal = d.trendReal; const trendRuns = d.trendRuns || 0;
 
   const scoreColor = riskScore.current >= 65 ? "var(--crit)" : riskScore.current >= 45 ? "var(--high)" : riskScore.current >= 25 ? "var(--med)" : "var(--low)";
   const scoreColorResolved = resolveCSSVar(scoreColor);
@@ -50,39 +51,49 @@ const ExecutiveView = ({ onOpenFinding, onNav }) => {
               <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid var(--border)" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, fontSize: 13 }}>
                   <div>
-                    <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>Peer median <span className="illus-tag">illustrative</span></div>
-                    <div style={{ fontWeight: 600 }}>{riskScore.benchmark} <span style={{ color: "var(--text-3)", fontWeight: 400, fontSize: 12 }}>· FinSrv segment</span></div>
+                    <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>Open findings</div>
+                    <div style={{ fontWeight: 600 }}>{summary.total} <span style={{ color: "var(--text-3)", fontWeight: 400, fontSize: 12 }}>· {summary.critical} critical</span></div>
                   </div>
                   <div>
-                    <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>Posture vs. peer <span className="illus-tag">illustrative</span></div>
-                    <div style={{ fontWeight: 600, color: "var(--crit)" }}>+{riskScore.current - riskScore.benchmark} pts above median</div>
+                    <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>vs. previous run</div>
+                    <div style={{ fontWeight: 600, color: riskScore.current >= riskScore.previous ? "var(--crit)" : "var(--low)" }}>
+                      {riskScore.current >= riskScore.previous ? "+" : ""}{riskScore.current - riskScore.previous} pts
+                    </div>
                   </div>
                 </div>
-                <div style={{ fontSize: 11, color: "var(--text-4)", marginTop: 8 }}>Peer benchmarking is illustrative — no external peer dataset is included in this demo.</div>
+                <div style={{ fontSize: 11, color: "var(--text-4)", marginTop: 8 }}>Aggregate score is the mean of all open findings, biased toward the most severe.</div>
               </div>
             </div>
           </div>
         </Card>
 
-        <Card title="30-Day Trend" sub={<span>Daily severity distribution <span className="illus-tag">illustrative</span></span>}>
-          <TrendBars trend={trend} />
+        <Card title="Risk Trend" sub={trendReal
+            ? <span>Severity distribution across {trendRuns} pipeline runs</span>
+            : <span>Accumulates as you run the pipeline</span>}>
+          {trendReal ? (
+            <TrendBars trend={trend} />
+          ) : (
+            <div className="empty" style={{ padding: "30px 16px" }}>
+              <Icon name="radar" size={22} style={{ color: "var(--text-4)", marginBottom: 8 }} />
+              <div>Not enough history yet to chart a trend.</div>
+              <div style={{ fontSize: 12, color: "var(--text-4)", marginTop: 4 }}>
+                {trendRuns === 0 ? "Run the pipeline" : `${trendRuns} run recorded — run it again`} to start building real history.
+              </div>
+            </div>
+          )}
           <div className="divider" />
           <div style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 12.5 }}>
             <div>
-              <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em" }}>Resolved (7d)</div>
+              <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em" }}>Resolved</div>
               <div style={{ fontWeight: 700, fontSize: 17, marginTop: 2, color: "var(--low)" }}>{delta.resolved}</div>
             </div>
             <div>
-              <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em" }}>New (7d)</div>
+              <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em" }}>New</div>
               <div style={{ fontWeight: 700, fontSize: 17, marginTop: 2 }}>{delta.new}</div>
             </div>
             <div>
-              <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em" }}>Escalated (7d)</div>
+              <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em" }}>Escalated</div>
               <div style={{ fontWeight: 700, fontSize: 17, marginTop: 2 }}>{delta.escalated}</div>
-            </div>
-            <div>
-              <div style={{ color: "var(--text-3)", fontSize: 11, textTransform: "uppercase", letterSpacing: ".06em" }}>MTTR <span className="illus-tag">illus.</span></div>
-              <div style={{ fontWeight: 700, fontSize: 17, marginTop: 2 }}>4.2<span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-3)" }}> days</span></div>
             </div>
           </div>
         </Card>

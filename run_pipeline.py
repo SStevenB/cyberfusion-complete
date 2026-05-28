@@ -94,6 +94,14 @@ def run(args):
     from analysis.risk_scorer import run_scoring
     scored = run_scoring(findings)
 
+    # ── Record a history snapshot for the real trend chart ────────────────────
+    try:
+        from analysis.history import record_snapshot
+        snap = record_snapshot(scored)
+        print(f"[History] snapshot saved → {snap}")
+    except Exception as e:
+        print(f"[History] could not save snapshot: {e}")
+
     # ── Summary ───────────────────────────────────────────────────────────────
     elapsed  = (datetime.now() - started).total_seconds()
     critical = sum(1 for s in scored if s["risk_label"] == "CRITICAL")

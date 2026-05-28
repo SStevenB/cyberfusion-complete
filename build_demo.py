@@ -230,24 +230,20 @@ def build_cfdata():
             "note": r.get("note", r.get("reason", "")),
         })
 
-    # ── 30-day trend (illustrative, clearly synthetic shape) ──
-    # We build a gentle ramp ending at the current real severity counts so the
-    # trend chart has something to show. Labeled as illustrative in the UI.
-    c0, h0, m0, l0 = (summary.get("critical", 0), summary.get("high", 0),
-                      summary.get("medium", 0), summary.get("low", 0))
-    trend = []
-    import datetime as _dt
-    base = _dt.date.today() - _dt.timedelta(days=28)
-    for i in range(15):
-        day = base + _dt.timedelta(days=i * 2)
-        f = i / 14.0
-        trend.append({
-            "d": day.strftime("%b %d"),
-            "crit": max(0, round(c0 + (1 - f) * 1)),
-            "high": max(0, round(h0 + (1 - f) * 2)),
-            "med": max(0, round(m0 + (1 - f) * 3)),
-            "low": max(0, round(l0 + (1 - f) * 2)),
-        })
+    # ── trend (REAL — built from accumulated pipeline-run history) ──
+    # Each pipeline run saves a snapshot (analysis/history.py). With 2+ runs we
+    # show a real trend; with fewer we flag trend_real=False so the UI says so
+    # honestly instead of inventing a line.
+    try:
+        from analysis.history import build_trend as _build_trend
+        _t = _build_trend()
+        trend = [{"d": p["d"], "crit": p["crit"], "high": p["high"],
+                  "med": p["med"], "low": p["low"], "score": p["score"]}
+                 for p in _t["points"]]
+        trend_real = _t["real"]
+        trend_runs = _t["runs"]
+    except Exception:
+        trend, trend_real, trend_runs = [], False, 0
 
     # ── pipeline module health (from real record counts) ──
     pipelineModules = [
@@ -283,11 +279,13 @@ def build_cfdata():
         },
         "riskScore": {
             "current": agg, "previous": max(0, agg - 6),
-            "label": agg_label, "trend": "up", "benchmark": 54,
+            "label": agg_label, "trend": "up",
         },
         "summary": summary,
         "delta": delta,
         "trend": trend,
+        "trendReal": trend_real,
+        "trendRuns": trend_runs,
         "findings": findings,
         "cves": cves,
         "kev": kev,
