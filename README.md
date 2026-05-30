@@ -1,310 +1,126 @@
-CyberFusion — Threat Intelligence Prioritization Platform
+# CyberFusion
 
-> A cyber risk fusion engine built in Python — designed to mirror real SOC/CTI analyst workflows using public intelligence sources, authorized telemetry, and rule-based signal correlation.
+A side project I've been building to learn how threat intelligence platforms actually work. It pulls in CVE data, scan results, breach exports, and asset inventories, normalizes them, runs correlation rules, and gives you a prioritized list of what to look at. The idea is to do what tools like Tenable or Recorded Future do at a smaller scale, with everything explainable so you can see exactly why something got flagged.
 
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
-[![Streamlit](https://img.shields.io/badge/Dashboard-Streamlit-red.svg)](https://streamlit.io/)
-[![React](https://img.shields.io/badge/Web%20App-React%20%2B%20FastAPI-0FB5A8.svg)](#two-ways-to-run-the-web-app)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Ethics: Lab Safe](https://img.shields.io/badge/Scope-Lab%20Safe-green.svg)](#ethics--scope)
+It's a React frontend on a FastAPI backend, sitting on top of a Python pipeline. Single server in production, two in dev.
 
----
+**Live demo:** https://SStevenB.github.io/cyberfusion-complete/ (static snapshot, real pipeline data)
 
-## 🔗 Live Demo
+![Executive view](docs/screenshots/01-executive.png)
 
-**[View the interactive demo →](https://SStevenB.github.io/cyberfusion-complete/)**
+## What it actually does
 
-A static, self-contained build of the dashboard hosted on GitHub Pages. The
-findings, risk scores, CVEs (NIST NVD), CISA KEV entries, security news, and
-lab port-scan results shown are **real output from a pipeline run**. A few
-elements are clearly tagged `illustrative` in the UI (30-day trend, peer
-benchmark, MTTR, briefing history), and breach/exposure records are
-clearly-labeled synthetic. The in-app **Methodology → About This Demo** panel
-spells out exactly what is real vs. illustrative.
+You upload security evidence (or connect an API like HaveIBeenPwned), the pipeline parses it, and an analysis layer correlates signals across sources. The result is a ranked list of findings, each with a score breakdown showing why it ranked where it did. Severity, asset criticality, KEV cross-reference (CISA's known-exploited list), evidence count — they all feed in, and you can see each one's contribution.
 
-
----
+I built this because the explainability part interests me. Most security tools give you a number with no defense, and analysts end up second-guessing them. Here every score is reproducible.
 
 ## Screenshots
 
-The React + FastAPI web app, populated with real pipeline output.
+The Data Sources page — configure connectors, upload files, see the live HIBP connector pulling real breach data:
 
-### Executive Security Summary
-Aggregate risk score, real run-over-run trend, KPI cards, and the highest-risk correlated findings with MITRE ATT&CK mappings.
+![Data sources](docs/screenshots/02-data-sources.png)
 
-![Executive View](docs/screenshots/01-executive.png)
+Findings with full evidence trails and status tracking:
 
-### Data Sources
-Configure API connectors or upload evidence files. Sources are grouped by category with live status; the HaveIBeenPwned connector is a real live-API integration, others are honestly labeled.
+![Findings](docs/screenshots/03-findings.png)
 
-![Data Sources](docs/screenshots/02-data-sources.png)
+The briefing page generates a structured CISO-style summary. If you have Ollama running locally it uses llama3 for free; otherwise it falls back to a template grounded in current findings:
 
-### Correlated Findings
-Every finding shows its rule, severity, risk score, evidence trail, and recommended action — with status tracking (open / acknowledged / resolved / false positive).
-
-![Correlated Findings](docs/screenshots/03-findings.png)
-
-### AI Briefing
-A structured CISO-style briefing generated from current findings — written by a local LLM (Ollama, free) when available, with a transparent fallback.
-
-![AI Briefing](docs/screenshots/04-briefing.png)
+![Briefing](docs/screenshots/04-briefing.png)
 
 <details>
-<summary><strong>More screenshots</strong> (Threat Feed, Exposure &amp; Breach, Methodology)</summary>
+<summary>A few more — threat feed, exposure, methodology</summary>
 
-### Threat Feed
-![Threat Feed](docs/screenshots/05-threat-feed.png)
-
-### Exposure & Breach
-![Exposure and Breach](docs/screenshots/06-exposure.png)
-
-### Methodology & Transparency
+![Threat feed](docs/screenshots/05-threat-feed.png)
+![Exposure](docs/screenshots/06-exposure.png)
 ![Methodology](docs/screenshots/07-methodology.png)
 
 </details>
 
----
+## Running it
 
-## What This Project Does
+You need Python 3.11+ and Node 22+. First time:
 
-CyberFusion is a multi-source threat intelligence aggregation and risk prioritization platform. It ingests signals from public/authorized data sources **and from security evidence a user uploads or connects** (vulnerability scans, asset inventories, breach exports, identity-risk logs, STIX threat intel), normalizes everything into a unified schema, applies rule-based correlation logic, scores the resulting findings by business risk, and presents them in an interactive analyst dashboard. Configured sources are **saved to a local workspace** so a returning user doesn't re-upload each session.
-
-**The core pipeline: Collect → Normalize → Correlate → Score → Visualize**
-
-This mirrors the core workflow of real CTI platforms like Recorded Future, ThreatConnect, and enterprise SIEM correlation engines — built entirely from public data and open-source tools.
-
----
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Data Collection Layer                    │
-│  NVD CVEs │ RSS News │ Shodan (free) │ GreyNoise │ HaveIBeenPwned│
-└──────────────────────────┬──────────────────────────────────────┘
-                           │  raw JSON
-┌──────────────────────────▼──────────────────────────────────────┐
-│                       Normalization Layer                       │
-│         Unified schema: source, type, severity, asset, tags     │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │  normalized items
-┌──────────────────────────▼──────────────────────────────────────┐
-│                       Correlation Engine                        │
-│   8 detection rules linking signals across sources              │
-│   Every finding is explainable — no black boxes                 │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │  correlated findings
-┌──────────────────────────▼──────────────────────────────────────┐
-│                        Risk Scoring Layer                       │
-│   Numeric score with full breakdown: severity + confidence      │
-│   + rule weight + evidence count + asset criticality            │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │  scored findings
-┌──────────────────────────▼──────────────────────────────────────┐
-│                      Presentation Layer                         │
-│   React SPA + FastAPI  ·OR·  Streamlit dashboard                │
-│   Executive · Data Sources · Upload · Findings · Methodology    │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Two Ways to Run the Web App
-
-CyberFusion ships **two interchangeable frontends** over the same Python pipeline:
-
-| | React + FastAPI (primary) | Streamlit (alternative) |
-|---|---|---|
-| **Stack** | Vite React SPA + FastAPI REST API | Pure Python |
-| **Feel** | Polished, product-grade UI | Fast to run, functional |
-| **Run (dev)** | `uvicorn api.main:app --port 8000` + `cd frontend && npm run dev` | `streamlit run dashboard/app.py` |
-| **Run (prod)** | `./build.sh` then one `uvicorn` process serves API + built app | n/a |
-
-The React app reads live data from the FastAPI backend (`/api/data`), uploads
-evidence (`/api/upload`), runs the pipeline (`/api/pipeline/run`), and manages
-configured sources — all backed by the **same** `analysis/`, `ingestion/`, and
-`run_pipeline.py` code. See **[DEPLOY.md](DEPLOY.md)** for production + Docker + Render.
-
----
-
-## Features
-
-### Data Sources (All Public / Authorized)
-| Source | What It Provides | API Key |
-|--------|-----------------|----------|
-| NIST NVD | CVE vulnerability data | None required |
-| RSS Feeds | Security news (Krebs, BleepingComputer) | None |
-| Shodan InternetDB | IP exposure context (free tier) | None |
-| GreyNoise Community | Noise/scanner IP classification | Free key |
-| HaveIBeenPwned | Domain breach history | Free key |
-| CISA KEV | Known Exploited Vulnerabilities catalog | None |
-| Lab Port Scanner | TCP scan of localhost/Docker services | None |
-| Synthetic Enterprise | Realistic mock asset inventory | N/A |
-
-### Intelligence Engine
-- **8 correlation rules** — link signals across source types to find compounding risks
-- **CISA KEV cross-reference** — flags CVEs that are actively being exploited in the wild
-- **Asset criticality weighting** — risk scores adjust based on asset tier (crown jewel vs. endpoint)
-- **Explainable scoring** — every finding shows a full point breakdown
-- **Trend tracking** — compare current run vs. previous to see what's new or resolved
-
-### Dashboard
-- **Executive View** — KPI cards, risk distribution, top recommendations
-- **Data Sources** — configure/connect sources, enable/disable, refresh, provenance, status
-- **Upload Evidence** — parse + validate authorized files into the pipeline
-- **AI Briefing** — structured CISO briefing generated from current data
-- **Threat Feed** — CVEs, news, KEV catalog with filters
-- **Exposure & Breach** — scan results, breach hits, IP reputation
-- **Correlated Findings** — bar chart + detailed cards with full evidence trails + status tracking + PDF export
-- **Methodology / Architecture** — every rule, score, and source documented
-
-### Evidence Ingestion & Configured Sources
-- **Upload + connector modes** — manual file upload for every source; API-connector architecture for Tenable, Qualys, HIBP, M365/Entra, STIX/TAXII
-- **Supported uploads** — Nmap XML, vulnerability-scanner CSV (Nessus/Tenable/Qualys/OpenVAS), asset-inventory CSV, HIBP breach CSV, M365/Entra sign-in CSV, STIX 2.1 JSON
-- **First-run onboarding** — demo vs. real mode, optional sample-data load, workspace setup
-- **Saved workspace** — configured sources persist in `data/workspace.json` (gitignored)
-- **Secret handling** — API credentials stored in the OS keychain via `keyring`, with a gitignored local-file fallback; masked in the UI, never committed
-- **Honest connector status** — upload mode fully works for all sources; live vendor-API fetch is clearly labeled *scaffolded* (config + credential storage + connection-test are real, live fetch is intentionally not faked)
-
----
-
-## Quickstart
-
-### 1. Clone and set up
 ```bash
 git clone https://github.com/SStevenB/cyberfusion-complete.git
 cd cyberfusion-complete
-python -m venv venv
-source venv/bin/activate
+python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
+cd frontend && unset NODE_ENV && npm install --include=dev && npm run build && cd ..
 ```
 
-### 2. Configure (optional — project works without API keys)
+Then just `./start.sh` and open http://localhost:8000. The launcher activates the venv, frees the port if something's already there, and starts the server. Press Ctrl+C to stop.
+
+If you want the AI briefing to actually use AI instead of the template fallback, run `./start_ollama.sh` once in another terminal — it pulls llama3 (~4.6 GB, one-time) and starts a local LLM server. Free, runs offline.
+
+Dev mode (hot reload on the frontend) is two terminals:
 ```bash
-cp config/config.example.yaml config/config.yaml
-# Edit config.yaml to add optional free API keys
+uvicorn api.main:app --reload --port 8000           # terminal 1
+cd frontend && unset NODE_ENV && npm run dev        # terminal 2 — opens :5173 with /api proxy
 ```
 
-### 3. Run the pipeline
+## What's inside
+
+```
+api/main.py                    FastAPI — wraps the pipeline as REST endpoints
+frontend/                      Vite + React SPA, served from /api/main.py in prod
+analysis/                      normalizer, correlator (8 rules → MITRE), risk scorer, history
+ingestion/                     parsers (nmap, vuln CSV, asset, HIBP, M365, STIX) + connectors
+data_collection/               NVD, CISA KEV, RSS, breach, IP reputation collectors
+scanning/scanner.py            TCP scanner (lab/localhost only — never external)
+samples/                       Synthetic evidence files for the demo
+tests/                         78 pytest tests
+run_pipeline.py                The pipeline orchestrator
+build_demo.py                  Builds the static GitHub Pages snapshot
+```
+
+## Data sources
+
+Everything pulls from public APIs or files you provide. Nothing requires a paid account to run, though some connectors get richer with optional free keys.
+
+| Source | Provides | Key |
+|--------|----------|-----|
+| NIST NVD | CVE records | none |
+| CISA KEV | Actively-exploited CVE catalog | none |
+| RSS feeds | Krebs, BleepingComputer, Hacker News | none |
+| Shodan InternetDB | IP exposure context | none (free) |
+| GreyNoise | Scanner/noise classification | free key |
+| HaveIBeenPwned | Domain breach history | optional |
+
+## Connectors
+
+There's a connector layer in `ingestion/connectors/` for Tenable, Qualys, HIBP, M365/Entra, and STIX/TAXII. Only **HIBP is wired to a live vendor API** — it hits the free `/breaches?domain=` endpoint and returns real breach records (try `adobe.com` and you'll see the 2013 dump with 152M accounts).
+
+The other four are honestly labeled "scaffolded" in the UI. Their config screens work, the connection-test endpoints work, but I haven't wired their live fetch because that needs paid vendor accounts I don't have. CSV upload mode works fully for every source as a universal fallback. The "Sync now" button only shows up on connectors that are actually implemented — I went out of my way to keep this distinction visible in the UI instead of faking it.
+
+## Honest about what's real
+
+A few things on the dashboard are clearly tagged in the methodology page rather than left ambiguous:
+
+- **Findings, scores, CVEs, KEV cross-refs, ports** — all real pipeline output, regenerated every run
+- **Run-over-run trend** — accumulates as you run the pipeline; with one run it says so
+- **Breach data** — synthetic when no HIBP key is configured (and labeled as such)
+- **Briefing distribution** — Slack is real (uses `notifier.py` if you set a webhook); email and Jira are roadmap and labeled accordingly
+
+The whole point of a security tool is trust, so I figured fake numbers in a portfolio version would defeat the purpose.
+
+## Ethics
+
+Scans only run against localhost or Docker lab containers. The scanner won't accept external targets. Synthetic data is identified in code comments and in the UI. Real credentials never get stored in the repo — connector secrets go to the OS keychain via `keyring`, with a gitignored local file as the fallback for headless environments.
+
+## Tests
+
 ```bash
-python run_pipeline.py
+source venv/bin/activate
+pytest tests/ -q
 ```
 
-### 4. Launch a frontend
+78 tests covering the pipeline, ingestion, source registry, secrets, connectors, the FastAPI endpoints, and the trend history. They use isolated temp workspaces so they don't touch your real state.
 
-**Option A — React + FastAPI web app (primary):**
-```bash
-# terminal 1 — API
-uvicorn api.main:app --reload --port 8000
-# terminal 2 — React dev server (proxies /api → :8000)
-cd frontend && unset NODE_ENV && npm install --include=dev && npm run dev
-# open http://localhost:5173
-```
-For a single-server production build: `./build.sh` then
-`uvicorn api.main:app --host 0.0.0.0 --port 8000` (serves API + app on one port).
-Or just use `./start.sh` which handles port conflicts + venv automatically.
+## Deploying
 
-**For real AI-written briefings** (instead of templates), run `./start_ollama.sh`
-in another terminal once — it starts a free local LLM. The "Generate briefing"
-button then produces real AI prose; otherwise it falls back to a grounded template.
-
-**Option B — Streamlit dashboard (alternative):**
-```bash
-streamlit run dashboard/app.py
-```
-
-### 5. (Optional) Spin up lab services for scanning
-```bash
-docker-compose up -d
-```
-
----
-
-## Project Structure
-
-```
-cyberfusion-complete/
-├── data_collection/          # NVD, KEV, news, breach, IP-reputation, exposure
-├── scanning/
-│   └── scanner.py            # Lab-only TCP port scanner
-├── analysis/
-│   ├── normalizer.py         # Unified schema (live API data + uploads)
-│   ├── correlator.py         # 8 rule-based correlation rules → MITRE ATT&CK
-│   └── risk_scorer.py        # Explainable risk scoring
-├── ingestion/                # Upload + configured-source layer
-│   ├── file_router.py        # Detect file type → dispatch to parser
-│   ├── schema.py             # Shared normalized-record + provenance helper
-│   ├── secrets.py            # OS-keychain secret store (+ gitignored fallback)
-│   ├── source_registry.py    # Saved source config → data/workspace.json
-│   ├── parsers/              # nmap, vuln CSV, asset CSV, HIBP CSV, M365 CSV, STIX
-│   └── connectors/           # Tenable/Qualys/HIBP/M365/STIX (scaffolded + base)
-├── api/
-│   └── main.py               # FastAPI REST backend (wraps the pipeline)
-├── frontend/                 # Vite + React SPA (primary web UI)
-│   ├── src/mockup/           # design system: components, pages, styles
-│   ├── assemble.mjs          # builds src/CyberFusionApp.jsx from mockup
-│   └── vite.config.js        # dev proxy /api → :8000
-├── dashboard/
-│   ├── app.py                # Streamlit multi-page dashboard (alternative UI)
-│   ├── sources_page.py       # Onboarding wizard + Data Sources page
-│   └── methodology.py        # Rule + data-source documentation
-├── samples/                  # Clearly-labeled synthetic evidence files
-├── config/                   # config.example.yaml + assets.yaml
-├── data/
-│   ├── raw/  processed/  outputs/   # pipeline data (gitignored)
-│   └── uploads/  workspace.json  secrets.local.json  # local state (gitignored)
-├── tests/                    # 63 pytest tests (pipeline + ingestion + platform + API)
-├── docker-compose.yml        # Lab service containers
-├── run_pipeline.py           # Master pipeline runner
-├── build_demo.py             # Static GitHub Pages demo builder
-├── build.sh                  # Production build (deps + frontend/dist)
-├── Dockerfile                # Multi-stage: build React, run with Python
-├── render.yaml               # One-service Render deploy config
-├── DEPLOY.md                 # Deployment guide
-└── requirements.txt
-```
-
----
-
-## Ethics & Scope
-
-- **No unauthorized scanning.** All TCP scans target `localhost` or Docker lab containers only.
-- **No credential harvesting.** The project never stores, displays, or processes real user credentials.
-- **No illegal activity.** Every data source used is public, rate-limited, and used per its terms of service.
-- **Synthetic data is clearly labeled.** All generated mock data is identified in the UI and in code comments.
-
----
-
-## Skills Demonstrated
-
-- **Python architecture** — modular pipeline with clean separation of concerns
-- **REST API integration** — multiple third-party APIs with graceful error handling
-- **Data normalization** — unified schema pattern (mirrors real SIEM design)
-- **Security domain knowledge** — CVEs, port scanning, breach monitoring, threat intel workflows
-- **Explainability** — every risk score has a documented breakdown (important in real security tooling)
-- **Full-stack development** — React (Vite) SPA + FastAPI REST API, plus a Streamlit alternative
-- **API design** — clean REST endpoints wrapping the pipeline (data, upload, pipeline-run, source CRUD)
-- **Dashboard development** — Streamlit multi-page app with Plotly charts
-- **Docker** — lab service orchestration + multi-stage production image
-- **Testing** — 63 pytest tests across pipeline, ingestion, platform, and API layers
-- **Documentation** — architecture diagrams, ethics statement, setup guide
-
----
-
-## Roadmap
-
-- [x] **Phase 1**: Public API sources, lab scanning, explainable scoring
-- [x] **Phase 2**: Asset inventory integration, MITRE ATT&CK tactic tagging
-- [x] **Phase 3**: Historical trend tracking, finding delta detection
-- [x] **Phase 4**: Slack/email alerting + PDF reporting + AI briefing
-- [x] **Phase 5**: Upload-driven evidence ingestion (6 parsers) + correlation integration
-- [x] **Phase 6**: Configured platform — source registry, onboarding, Data Sources page, secret handling, connector scaffolding
-- [x] **Phase 7**: React + FastAPI web app (live data, uploads, pipeline runs over HTTP) + deployment config
-- [x] **Phase 8**: First real live-API connector — HIBP (free /breaches?domain= endpoint, optional paid /breacheddomain support); local Ollama briefings (free AI); commit + deploy
-- [ ] **Next**: Live Tenable/Qualys/Graph/TAXII connector fetch (currently scaffolded)
-
----
+There's a `Dockerfile`, `render.yaml`, and `build.sh` for Render/Fly/Railway. Details in [DEPLOY.md](DEPLOY.md). Short version: Render reads `render.yaml`, runs `./build.sh`, and serves a single uvicorn process that handles both the API and the built React app.
 
 ## License
 
-MIT — free to use, modify, and build on. Attribution appreciated.
+MIT.

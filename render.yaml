@@ -14,7 +14,7 @@ services:
       - key: PYTHON_VERSION
         value: "3.12.4"
       - key: NODE_VERSION
-        value: "20.18.0"
+        value: "22.12.0"
       # Secrets are stored in the OS keychain locally; on a server there is no
       # keychain, so the gitignored file fallback is used. Set real connector
       # API keys via Render's dashboard env vars if you wire live connectors.

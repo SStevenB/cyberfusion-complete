@@ -111,7 +111,7 @@ def run(args):
     print("  Pipeline Complete!")
     print(f"  Duration:  {elapsed:.1f}s")
     print(f"  Findings:  {len(scored)} total  |  {critical} CRITICAL  |  {high} HIGH")
-    print("  Dashboard: streamlit run dashboard/app.py")
+    print("  Dashboard: ./start.sh   (then open http://localhost:8000)")
     print("=" * 65 + "\n")
 
     if critical > 0:

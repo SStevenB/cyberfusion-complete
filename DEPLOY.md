@@ -45,5 +45,3 @@ The multi-stage `Dockerfile` builds the frontend with Node, then runs it with Py
   connector layer.
 - **Pipeline data** (`data/raw|processed|outputs`) is generated at runtime via
   `POST /api/pipeline/run` or the "Run pipeline now" button — it isn't committed.
-- **The Streamlit app still works** (`streamlit run dashboard/app.py`) as an
-  alternative interface; the React app is the primary product UI.

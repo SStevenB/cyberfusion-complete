@@ -1,4 +1,4 @@
-# dashboard/methodology.py
+# analysis/methodology.py
 #
 # Structured documentation for every correlation rule + every data source.
 # This is what powers the Finding Detail page — turns opaque rule IDs into

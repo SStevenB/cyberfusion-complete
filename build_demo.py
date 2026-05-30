@@ -307,12 +307,12 @@ def build_cfdata():
 # 2. Rule catalog + data sources + briefing (sourced from real methodology.py)
 # ─────────────────────────────────────────────────────────────────────────────
 def enrich_reference(cfdata):
-    """Pull rule docs + data-source provenance from dashboard/methodology.py
+    """Pull rule docs + data-source provenance from analysis/methodology.py
     so the demo's Methodology page reflects the real documented logic."""
     rule_catalog, data_sources = [], []
     try:
         import importlib.util
-        mpath = os.path.join(BASE, "dashboard", "methodology.py")
+        mpath = os.path.join(BASE, "analysis", "methodology.py")
         spec = importlib.util.spec_from_file_location("cf_methodology", mpath)
         m = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(m)
